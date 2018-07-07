@@ -2,10 +2,12 @@ data:extend({
 
 -- STARTUP
 	{
-		type = "bool-setting",
-		name = "zadv_rso_override",
+		type = "int-setting",
+		name = "zadv_starting_radiius",
+        setting_type = "runtime-global",
 		orcder = "a",
-		setting_type = "startup",
-		default_value = true
+		default_value = 12,
+		minimum_value = 9,
+		maximum_value = 64
 	},
 })
