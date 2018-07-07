@@ -1,4 +1,3 @@
-require 'defines'
 
 local areas = {}
 
@@ -10,7 +9,7 @@ areas['test'] = {
 
 	
 	-- blueprint options
-	,propability = 25.0						-- [default: 25.0] from 1.0 to 100.0
+	,probability = 25						-- [default: 25] from 1 to 250 (0.1% - 25%)
 	,force = "neutral"						-- [default: "neutral"] "player", "neutral", "enemy" or custom name to use/create new Force to use for the building
 	,force_build = true						-- [default: true] When true, anything that can be built is else nothing is built if any one thing can't be built
 	,finalize_build = true					-- [default: true] Build entities; place ghosts if "false"
@@ -26,7 +25,6 @@ areas['test'] = {
 	,active = true							-- [default: true] Deactivating an entity will stop all its operations (inserters will stop working)
 	,armed = true							-- [default: true] If this land mine is armed
 	,consumption_modifier = 1.0				-- [default: 1.0] Multiplies the energy consumption
-	,damage = 0								-- [default: 0] Damages the entity (if it have health). Will be used "neutral" Force as source and fire as damage type
 	,destructible = true					-- [default: true] When the entity is not destructible it can't be damaged
 	,remains = false						-- [default: false] Replace entities with their remains if they have it
 	,energy_stored = 0.0					-- [default: 0.0] Energy stored in the entity (heat in furnace, energy stored in electrical devices etc
@@ -37,7 +35,7 @@ areas['test'] = {
 
 	
 	-- events after creating area
-	,message = ""							-- [default: ""] print message to the chat; ignored if ""
+	,message = "AREA TEST MSG"				-- [default: ""] print message to the chat; ignored if ""
 	,script = function(self)				-- Script would be running once after area created
 		local data = self
 	end

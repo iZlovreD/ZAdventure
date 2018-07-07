@@ -18,7 +18,14 @@ format = string.format
 floor = math.floor
 
 ZADV_initialized = false
-ZADV_QueuedArea = false
+ZADV_ForcedArea = false
+ZADV_InProcess = false
+ZADV_AreaList = {}
+
+Color = {
+	red 	= {r = 1, g = 0, b = 0, a = 0.5},
+	green 	= {r = 0, g = 1, b = 0, a = 0.5}
+}
 
 
 --
@@ -26,11 +33,11 @@ ZADV_QueuedArea = false
 --
 ZADV.debug = 0
 
-_logger = Logger.new('ZADV', 'main')
+_logger = Logger.new('ZAdventure', 'main')
 function debug ( msg, ... )
 	
 	if type(msg) == 'table' then
-		msg = serpent.dump(msg)
+		msg = '\n'.. serpent.block(msg)
 	elseif type(msg) ~= 'string' then
 		msg = tostring(msg)
 	end
@@ -47,13 +54,6 @@ function debug ( msg, ... )
 end
 
 
---
--- pre-initialization
---
-
-ZADV.Settings = ZADV.Settings or {}
-ZADV.Settings['start_area'] = settings.global["zadv_starting_radiius"].value
-
 
 --
 -- Initialization
@@ -67,7 +67,7 @@ function PrepareBlueprint()
 		if not global.ZADV.entity then
 			
 			if not game.surfaces['ZADV_SURFACE'] then
-				game.create_surface("ZADV_SURFACE")
+				game.create_surface("ZADV_SURFACE",{width=3,height=3,peaceful_mode=true})
 				debug("Creating operable surface")
 			end
 			
@@ -84,7 +84,18 @@ function PrepareBlueprint()
 	
 end
 
--- Post initialization
+--- Get Settings
+local function UpdateSettings()
+
+	ZADV.Settings = ZADV.Settings or {}
+	ZADV.Settings['global_frequency'] = settings.global["zadv_global_frequency"].value
+	ZADV.Settings['start_area'] = settings.global["zadv_starting_radiius"].value
+	
+	debug("Settings updated")
+	
+end
+
+--- Post initialization
 local function PostInit()
 	
 	-- skip if already done
@@ -98,12 +109,15 @@ local function PostInit()
 	ZADV.debug = global.ZADV.debug
 	ZADV.Data = global.ZADV.Data
 	
+	-- get settings
+	UpdateSettings()
+	
 	-- debug settings
 	if ZADV.debug >= 3 then
-		_logger = Logger.new('ZADV', 'debug', true, { force_append = true })
+		_logger = Logger.new('ZAdventure', 'debug', true, { force_append = true })
 		debug("Set debug level to 3.")
 	elseif ZADV.debug >= 2 then
-		_logger = Logger.new('ZADV', 'debug', true)
+		_logger = Logger.new('ZAdventure', 'debug', true)
 		debug("Set debug level to 2.")
 	elseif ZADV.debug >= 1 then
 		debug("Set debug level to 1.")
@@ -118,13 +132,18 @@ local function PostInit()
 	-- globals
 	global.generator = game.create_random_generator(game.tick)
 	
+	-- generate area list
+	for m,v in pairs(ZADV.Data) do for a,d in pairs(v) do
+		ZADV_AreaList[#ZADV_AreaList+1] = {m, a}
+	end end
+	
 	-- Done
 	ZADV_initialized = true
 	debug("Initialization complete.")
 	
 end
 
--- Global initialization
+--- Global initialization
 function Init(event)
 	
 	-- creating blueprint instance
@@ -148,12 +167,14 @@ function Init(event)
 	debug("Raw data requested.")
 	debug(ZADV)
 	
+	-- erase debug log
+	_logger = Logger.new('ZAdventure', 'debug', true)
+	_logger.write()
+	
 	-- localize globals
 	PostInit()
 	
 end
-
-
 
 
 
@@ -173,15 +194,7 @@ end
 -- @param position : {x,y} array
 -- @return true if the position inside starting area, false otherwise
 local function isInStartingArea( position )
-	
-	local adjustedX = base(position.x / 32)
-	local adjustedY = base(position.y / 32)
-	local start_radius = ZADV.Settings['start_area']
-	
-	if (adjustedX + adjustedY <= start_radius) then return true end
-	
-	return Area.inside(Area.expand(Area.construct(0,0,0,0), start_radius*32), position)
-	--return false
+	return Area.inside(Area.expand(Area.construct(0,0,0,0), ZADV.Settings['start_area']*32), position)
 end
 
 --- Collision check on surface in selected area
@@ -193,19 +206,81 @@ local function CollisionCheckArea(surface, area)
 	else return false end
 end
 
+--- Split string to array
+-- @param str : input string
+-- @param sep : separator
+-- @return arrray of strings
+local function strsplit(str,sep)
+	local sar = {}
+	for s in string.gmatch(str,"([^"..sep.."]+)") do sar[#sar+1] = s end
+	return sar
+end
 
+--- Generate random number
+-- @param min : minimum value
+-- @param max : maximum value
+-- @return random number
+local function Rnd(min,max)
+	global.adseed = global.adseed or 1
+	global.adseed = global.adseed + game.tick
+	global.adseed = global.adseed > 2^31 and 1 or global.adseed
+	local seed = game.tick + floor(tonumber(tostring({}):sub(8))/(math.pi*1000))
+	global.generator = global.generator or game.create_random_generator(seed)
+	global.generator.re_seed(seed)
+	return math.min(max,math.max(min,floor(global.generator(min,max+global.adseed)%max)))
+end
 
+--- Generate random number
+-- @param T : table
+-- @return table length
+local function tlength(T)
+	local count = 0
+	for _ in pairs(T) do count = count + 1 end
+	return count
+end
 
-
-
-
---
--- Area preparation
---
-local function Randomizer()
+--- Randomize and prepare new area
+-- @return table area data
+local function GetRandomArea()
 	
-	global.generator.re_seed(game.tick)
+	-- randomize global step
+	local roll = Rnd(1,1000)
+	debug("Let's take our chance: ".. roll ..' prob: '.. tonumber(ZADV.Settings['global_frequency']))
+	if not ZADV_ForcedArea and roll > tonumber(ZADV.Settings['global_frequency']) then return nil end
 	
+	-- run through the list of areas
+	local areas = {}
+	for mn,mod in pairs(ZADV.Data) do
+		for an,a in pairs(mod) do
+	
+		-- calculate random possibility for each area
+		roll = Rnd(1,1000)
+		debug("area chance... ".. roll ..' '.. a.probability)
+		if roll <= a.probability then
+			-- store triggered area
+			table.insert(areas, {mn,an})
+		end
+		
+	end end
+	
+	-- if we have multiple triggered areas - choose one
+	if tlength(areas) > 0 then
+		areas = areas[Rnd(1,tlength(areas))]
+		debug("Next area  is found")
+		
+	-- select one if we must
+	elseif ZADV_ForcedArea then
+		areas = ZADV_AreaList[Rnd(1,tlength(ZADV_AreaList))]
+		debug("Next area is found (forced)")
+		
+	-- nothing to do
+	else return nil end
+	
+	ZADV_ForcedArea = false
+	debug("Next area [%s - %s] is ready", areas[1], areas[2])
+	
+	-- return area
+	return ZADV.Data[areas[1]][areas[2]]
 	
 end
 
@@ -219,7 +294,8 @@ end
 local function localChartedChunk( event )
 		
 	-- local variables
-	local _area = Area.construct(event.position.x*32, event.position.y*32, event.position.x*32+32, event.position.y*32+32)
+	local pos = event.position
+	local _area = Area.round_to_integer(Area.construct(pos.x*32, pos.y*32, pos.x*32+32, pos.y*32+32))
 	local center = Area.center(_area)
 	local surface = game.surfaces[event.surface_index]
 	local chunk_data = Tile.get_data(surface, center) or {}
@@ -227,104 +303,125 @@ local function localChartedChunk( event )
 	-- check collisions and if true - ignore chunk
 	if CollisionCheckArea(surface, _area) then 
 		chunk_data["generated"] = true
-		ZADV_QueuedArea = true
+		ZADV_ForcedArea = true
 	end
-	
-	-- 
-	
 	
 	-- check if chunk already generated - ignore if true
 	if chunk_data["generated"] or isInStartingArea(center) then
 		return
 	end
 	
-	-- debugging
-	if ZADV.debug >= 2 then
-		local tiles = {}	
-		local bp = BPlib.chunkMarkerArray	
-		for _,t in pairs(bp['blueprint']["tiles"]) do
-			table.insert(tiles, { name = t.name, position = Position.offset(center, t.position.x, t.position.y) } )
-		end	
-		surface.set_tiles( tiles )
-	end
+	-- get random area
+	local newarea = GetRandomArea()	
 	
+	if newarea then
 	
-	ZADV.blueprint.clear()
-	ZADV.blueprint.import_stack(ZADV.Data["ZADV_Base"]['test'].bp)
-	
-	--[[
-	for k,v in pairs(ZADV.blueprint.build_blueprint{
-		surface=surface,
-		force=game.forces["player"],
-		position=center,
-		force_build=true,
-		direction=defines.direction.north,
-		skip_fog_of_war=false
-	}) do if not v.revive() then
-			for _,e in pairs(surface.find_entities_filtered{
-				area=v.bounding_box,
-				name=v.name,
-				invert=true
-			}) do e.destroy() end
-			v.revive()
+		-- prepare blueprint
+		ZADV.blueprint.import_stack(newarea.bp)
+		if ZADV.blueprint.is_blueprint_setup() then
+			
+			-- place blueprint on surface
+			local ghosts = ZADV.blueprint.build_blueprint{
+				surface=surface,
+				force=game.forces["neutral"],
+				position=center,
+				force_build=true,
+				direction=defines.direction.north,
+				skip_fog_of_war=false
+			}
+			
+			-- finalize placed entities
+			for k,v in pairs(ghosts) do
+				if v.valid and not v.revive() then
+					for _,e in pairs(surface.find_entities_filtered{
+						area=v.bounding_box,
+						name=v.name,
+						invert=true
+					}) do e.destroy() end
+					v.revive()
+				end
+			end
+			
+			
+			
+			-- erase blueprint
+			ZADV.blueprint.clear()
+		
 		end
-	end--]]
 	
-	local ghosts = ZADV.blueprint.build_blueprint{
-		surface=surface,
-		force=game.forces["neutral"],
-		position=center,
-		force_build=true,
-		direction=defines.direction.north,
-		skip_fog_of_war=false
-	}
-	for k,v in pairs(ghosts) do if not v.revive() then
-			for _,e in pairs(surface.find_entities_filtered{
-				area=v.bounding_box,
-				name=v.name,
-				invert=true
-			}) do e.destroy() end
-			v.revive()
-		end
+		-- mark chunk
+		chunk_data["generated"] = true
+		Tile.set_data(surface, center, chunk_data)
+		
 	end
-	
-	
-	--debug(ZADV.blueprint.is_blueprint_setup())
-	
-	chunk_data["generated"] = true
-	Tile.set_data(surface, center, chunk_data)
 	
 end
 
 local function localGenerateChunk( event )
-
+	
+	if ZADV_InProcess then return end
+	ZADV_InProcess = true
+	
 	local center = Area.center(event.area)
 	local chunk_data = Chunk.get_data(event.surface, center) or {}
 	
-	if CollisionCheckArea(event.surface, area, {"water", "deepwater", "water-green", "deepwater-green"}) then 
+	-- check collisions and if true - ignore chunk
+	if CollisionCheckArea(event.surface, event.area) then 
 		chunk_data["generated"] = true
+		ZADV_ForcedArea = true
+	end
+	
+	-- check if chunk already generated - ignore if true
+	if chunk_data["generated"] or isInStartingArea(center) then
+		ZADV_InProcess = false
 		return
 	end
 	
-	if chunk_data["generated"] or isInStartingArea(center) then return end
+	-- get random area
+	local newarea = GetRandomArea()	
 	
-	local tiles = {}
+	if newarea then
 	
-	local bp = BPlib.GetChunkMarker()
-	for _,t in pairs(bp["blueprint"]["tiles"]) do
-		table.insert(tiles, { name = t.name, position = {center.x + t.position.x, center.y + t.position.y} } )
+		-- prepare blueprint
+		ZADV.blueprint.import_stack(newarea.bp)
+		if ZADV.blueprint.is_blueprint_setup() then
+			
+			-- place blueprint on surface
+			local ghosts = ZADV.blueprint.build_blueprint{
+				surface=event.surface,
+				force=game.forces["neutral"],
+				position=center,
+				force_build=true,
+				direction=defines.direction.north,
+				skip_fog_of_war=false
+			}
+			
+			-- finalize placed entities
+			for k,v in pairs(ghosts) do
+				if v.valid and not v.revive() then
+					for _,e in pairs(event.surface.find_entities_filtered{
+						area=v.bounding_box,
+						name=v.name,
+						invert=true
+					}) do e.destroy() end
+					v.revive()
+				end
+			end
+			
+			
+			
+			-- erase blueprint
+			ZADV.blueprint.clear()
+		
+		end
+		
+		-- mark chunk
+		chunk_data["generated"] = true
+		Chunk.set_data(event.surface, center, chunk_data)
+		
 	end
 	
-	event.surface.set_tiles( tiles )
-	--[[
-	game.surfaces[event.surface_index ].create_entity {
-		name = "refined-hazard-concrete-left",
-		position = {center.x, center.y},
-		force=event.force
-	}--]]
-	
-	chunk_data["generated"] = true
-	Chunk.set_data(event.surface, center, chunk_data)
+	ZADV_InProcess = false
 	
 end
 
@@ -333,9 +430,10 @@ end
 -- EVENTS
 --
 script.on_init(Init)
-script.on_event(defines.events.on_tick, 				PostInit)
-script.on_event(defines.events.on_chunk_charted, 		localChartedChunk)
---script.on_event(defines.events.on_chunk_generated, 		localGenerateChunk)
+script.on_event(defines.events.on_tick, 						PostInit)
+--script.on_event(defines.events.on_chunk_charted, 				localChartedChunk)
+script.on_event(defines.events.on_chunk_generated, 				localGenerateChunk)
+script.on_event(defines.events.on_runtime_mod_setting_changed,	UpdateSettings)
 
 
 script.on_event(defines.events.on_player_mined_item, function(event)
@@ -364,6 +462,8 @@ script.on_event(defines.events.on_player_mined_item, function(event)
 	
 --]]
 
+	
+	
 end)
 
 
