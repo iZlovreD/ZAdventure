@@ -40,16 +40,20 @@ function base64.encode(to_encode)
     local encoded = ''
     local trailing = ''
 
+	local byte = string.byte
+	local sub = string.sub
+	local tonumber = tonumber
+
     for i = 1, string.len(to_encode) do
         bit_pattern = bit_pattern .. to_binary(string.byte(string.sub(to_encode, i, i)))
     end
 
     -- Check the number of bytes. If it's not evenly divisible by three,
     -- zero-pad the ending & append on the correct number of ``=``s.
-    if math.mod(string.len(bit_pattern), 3) == 2 then
+    if math.fmod(string.len(bit_pattern), 3) == 2 then
         trailing = '=='
         bit_pattern = bit_pattern .. '0000000000000000'
-    elseif math.mod(string.len(bit_pattern), 3) == 1 then
+    elseif math.fmod(string.len(bit_pattern), 3) == 1 then
         trailing = '='
         bit_pattern = bit_pattern .. '00000000'
     end
@@ -69,19 +73,23 @@ function base64.decode(to_decode)
     local unpadded = padded:gsub("=", "")
     local bit_pattern = ''
     local decoded = ''
+	
+	local sub = string.sub
+	local find = string.find
+	local char = string.char
 
     for i = 1, string.len(unpadded) do
-        local char = string.sub(to_decode, i, i)
-        local offset, _ = string.find(index_table, char)
+        local char = sub(to_decode, i, i)
+        local offset, _ = find(index_table, char)
         if offset == nil then
              log("Invalid character '" .. char .. "' found.")
         end
 
-        bit_pattern = bit_pattern .. string.sub(to_binary(offset-1), 3)
+        bit_pattern = bit_pattern .. sub(to_binary(offset-1), 3)
     end
     for i = 1, string.len(bit_pattern), 8 do
-        local byte = string.sub(bit_pattern, i, i+7)
-        decoded = decoded .. string.char(from_binary(byte))
+        local byte = sub(bit_pattern, i, i+7)
+        decoded = decoded .. char(from_binary(byte))
     end
 
     local padding_length = padded:len()-unpadded:len()
