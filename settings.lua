@@ -19,4 +19,11 @@ data:extend({
 		minimum_value = 9,
 		maximum_value = 64
 	},
+	{
+		type = "bool-setting",
+		name = "zadv_experemental",
+        setting_type = "startup",
+		orcder = "c",
+		default_value = false
+	},
 })

@@ -209,11 +209,11 @@ local function base( int )
 end
 
 --- Check if position inside restrcted area
--- @param remoteness : distance from starting point in chunks
+-- @param distance : from position in chunks
 -- @param position : {x,y} array current position
--- @return true if the position inside restrcted area, false otherwise
-local function isRestrictedPosition( remoteness, position )
-	return Area.inside(Area.expand(Area.construct(0,0,0,0), remoteness*32), position)
+-- @return true if the position inside area, false otherwise
+local function isInsideBounds( position, distance )
+	return Area.inside(Area.expand(Area.construct(0,0,0,0), distance*32), position)
 end
 
 --- Collision check on surface in selected area
@@ -268,6 +268,9 @@ end
 -- @return table area data
 local function GetRandomArea(seed)
 	
+	local pos = seed
+	seed = pos.x + pos.y
+	
 	-- randomize global step
 	local roll = Rnd(1,1000,seed)
 	if not ZADV_ForcedArea and roll > tonumber(ZADV.Settings['zadv_global_frequency']) then return nil end
@@ -277,31 +280,38 @@ local function GetRandomArea(seed)
 	roll = Rnd(1,1000,seed)
 	
 	for mn,mod in pairs(ZADV.Data) do
-		for an,a in pairs(mod) do
-			if roll <= a.probability*10 then
+		for an,ar in pairs(mod) do
+		
+			if roll <= ar.probability then
 			
-				local techallow = false
-				
 				-- technology check
-				if a.ignore_technologies then
+				local techallow = false
+				if ar.ignore_technologies then
 					techallow = true
-				elseif a.techs then
+				elseif ar.techs then
 					techallow = true
 					for _,f in pairs(game.forces) do
-					for _,t in pairs(a.techs) do
+					for _,t in pairs(ar.techs) do
 					if not f.technologies[t].researched then
 						techallow = false
+						debug('Not enough technologies for "%s - %s", skip this time..',mn,an)
 					end end	end
 				end
 				
+				-- placeing check
+				local placeallow = true
+				if isInsideBounds(pos, ZADV.Data[mn][an].remoteness_min) then
+					placeallow = false
+					debug('Area "%s-%s" in starting area', mn, an)
+				elseif ( ZADV.Data[mn][an].remoteness_max ~= 0 and not isInsideBounds(pos, ZADV.Data[mn][an].remoteness_max) ) then
+					placeallow = false
+					debug('Area "%s-%s" is outside placing bounds', mn, an)
+				end
+				
 				-- all checks done
-				if techallow then
+				if techallow and placeallow then
 					-- store triggered area
 					table.insert(areas, {mn,an})
-				else
-					if not techallow then
-						debug('Not enough technologies for "%s - %s", skip this time..',mn,an)
-					end
 				end
 				
 			end
@@ -321,7 +331,6 @@ local function GetRandomArea(seed)
 	else return false end
 	
 	ZADV_ForcedArea = false
-	debug('New area "%s - %s"', areas[1], areas[2])
 	
 	-- return area
 	return ZADV.Data[areas[1]][areas[2]]
@@ -357,13 +366,20 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					game.create_force(newarea.force)
 				end
 			else newarea.force = "neutral" end
+		elseif newarea.force == 'player' and #game.forces > 3 then
+			local forces = {}
+			for _,f in pairs(game.forces) do 
+				if f.name ~= 'neutral' and f.name ~= 'enemy' then table.insert(forces, f.name) end
+			end
+			newarea.force = forces[math.min(#game.forces - 2, Rnd(1,#game.forces - 1))]
+			debug("Selected force: ".. newarea.force)
 		end
 		
 		-- direction
 		if newarea.random_direction then
 			newarea.direction = math.min(4,Rnd(1,5))*2-2
 		else
-			newarea.direction = 2
+			newarea.direction = 0
 		end
 		
 		
@@ -414,12 +430,15 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					name=newarea.names
 				}
 				
+				-- local storage
+				local locstor = {}
+				
 				-- update used types list
 				global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
 				
 				for _,e in pairs(entities) do
 				
-					-- store type for later checks
+					-- store type for future checks
 					global.ZADV.UsedTypes[e.type] = true
 					
 					-- Deactivating an entity will stop all its operations (inserters will stop working)
@@ -453,18 +472,38 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					e.rotatable = newarea.rotatable
 					
 					-- Script for each entity in new area
-					if type(newarea.ScriptForEach) == 'function' then pcall(newarea.ScriptForEach, game, surface, e, newarea.names or false) end
+					if type(newarea.ScriptForEach) == 'function' then 
+						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, e, newarea.names or {}, locstor)
+						if not done then debug("\n[%s].ScriptForEach (%s) return with error:\n%s", newarea.name, e.prototype.name, err) end
+					end
+					
+					if ZADV.debug >= 2 and newarea.name:find('maze') then
+						local rndroll, force, entity, namelist, locstore = Rnd(1,1000), newarea.force, e, newarea.names or {}, locstor
+						-- rndroll, game, surface, force, entity, namelist, locstore
+						
+						
+					end
 					
 				end
 				
 				-- Script for all entities in new area
-				if type(newarea.ScriptForAll) == 'function' then pcall(newarea.ScriptForAll, game, surface, area, center, newarea.names or false, entities or false) end
-				
+				if type(newarea.ScriptForAll) == 'function' then
+					local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {})
+					if not done then debug("[\n%s].ScriptForAll return with error:\n%s", newarea.name, err) end
+				end
+					
+				if ZADV.debug >= 2 and newarea.name:find('maze') then
+					local rndroll, force, namelist, entitylist = Rnd(1,1000), newarea.force, newarea.names or {}, entities or {}
+					-- rndroll, game, surface, force, area, center, namelist, entitylist
+			--[[--------------------------------------------------------------------]]--
+			--[[--------------------------------------------------------------------]]--
+				end
+			
 			end
 		end
 		
 		-- force chart area
-		if newarea.force_reveal then
+		if ZADV.debug >= 2 or newarea.force_reveal then
 		for _,f in pairs(game.forces) do
 		if f.name ~= 'neutral' and f.name ~= 'enemy' then
 			if bigarea2d then f.chart(surface, bigarea2d)
@@ -539,7 +578,7 @@ local function GenerateChunkArea( event )
 	end
 	
 	-- check if chunk already generated or in starting area - ignore if true
-	if chunk_data["generated"] or isRestrictedPosition(ZADV.Settings['zadv_starting_radiius'], position) then
+	if chunk_data["generated"] or isInsideBounds(position, ZADV.Settings['zadv_starting_radiius']) then
 		-- event unlock and exit
 		global.ZADV_InProcess = false
 		Chunk.set_data(event.surface, chunk_position, chunk_data)
@@ -547,13 +586,17 @@ local function GenerateChunkArea( event )
 	end
 	
 	-- get random area
-	local newarea = GetRandomArea(position.x + position.y)
+	local newarea = GetRandomArea(position)
 	
 	-- if we get one...
-	if newarea and not isRestrictedPosition(newarea.remoteness, position) then
-	
+	if newarea and not isInsideBounds(position, newarea.remoteness_min)
+	and ( newarea.remoteness_max == 0 or isInsideBounds(position, newarea.remoteness_max) )
+	then
+		
+		debug('New area "%s"', newarea.name)
+		
 		-- check area size
-		if newarea.area.size.x > 16 or newarea.area.size.y > 16 then
+		if newarea.area.size.x > 32 or newarea.area.size.y > 32 then
 			
 			script.on_nth_tick(game.tick + 300, UnlockChunkEvent)
 			global.ZADV_ForceUnlock = true
@@ -562,7 +605,7 @@ local function GenerateChunkArea( event )
 			
 			-- apply offset to x
 			if position.x < 0 then position.x = position.x - 16
-			else position.x = position.x + 14 end
+			else position.x = position.x + 16 end
 			
 			-- apply offset to y
 			if position.y < 0 then position.y = position.y - 16
@@ -570,7 +613,7 @@ local function GenerateChunkArea( event )
 			
 			-- calculate new area box
 			newarea.bigchunkarea = {
-				left_top={x = position.x-30, y = position.y-32},
+				left_top={x = position.x-32, y = position.y-32},
 				right_bottom={x = position.x+32, y = position.y+32}
 			}
 			

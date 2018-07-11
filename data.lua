@@ -3,7 +3,7 @@ require 'stdlib/table'
 ZADV = {}
 ZADV.Data = {}
 ZADV.Settings = {}
-ZADV.debug = 0
+ZADV.debug = settings.startup["zadv_experemental"].value and 2 or 0
 
 local format = string.format
 

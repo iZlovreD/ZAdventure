@@ -9,7 +9,7 @@ for modname,list in pairs( ZADV.Data ) do
 for bpname,bpdata in pairs(list) do
 	
 	-- check for empty area
-	if bpdata.bp:len() > 0 then
+	if bpdata.bp:len() > 0 and ((settings.startup["zadv_experemental"].value and bpdata.experemental) or not bpdata.experemental) then
 
 		-- save area name
 		ZADV.NamePairList = ZADV.NamePairList or {}
@@ -29,7 +29,7 @@ for bpname,bpdata in pairs(list) do
 			
 			-- save new area
 			ZADV.Data[modname][bpname] = _data
-			debug(1,'New Area "%s - %s" [%s:%s] added.', modname, bpname, _data.area.size.x, _data.area.size.y)
+			debug(0,'New Area "%s - %s" [%s:%s] added.', modname, bpname, _data.area.size.x, _data.area.size.y)
 			
 			-- check additional parametres
 			local function _checkvalue(value, _type, default)
@@ -42,8 +42,9 @@ for bpname,bpdata in pairs(list) do
 			-- blueprint options
 			ZADV.Data[modname][bpname].bp 					=  bpdata.bp
 			ZADV.Data[modname][bpname].name 				=  modname ..'-'.. bpname
-			ZADV.Data[modname][bpname].probability 			=  math.min(100,math.max(1, bpdata.probability)) or 10
-			ZADV.Data[modname][bpname].remoteness 			= _checkvalue(bpdata.remoteness, 'number', 10)
+			ZADV.Data[modname][bpname].probability 			=  math.min(100,math.max(1, bpdata.probability or 10)) or 10
+			ZADV.Data[modname][bpname].remoteness_min 		= _checkvalue(bpdata.remoteness_min, 'number', 10)
+			ZADV.Data[modname][bpname].remoteness_max 		= _checkvalue(bpdata.remoteness_max, 'number', 0)
 			ZADV.Data[modname][bpname].ignore_technologies	= _checkvalue(bpdata.ignore_technologies, 'boolean', true)
 			ZADV.Data[modname][bpname].force 				= _checkvalue(bpdata.force, 'string', "neutral")
 			ZADV.Data[modname][bpname].force_build 			= _checkvalue(bpdata.force_build, 'boolean', true)
@@ -143,7 +144,7 @@ for i=0, chunks do
 		name = name,
 		time_to_live = 0,
 		speed = 1,
-		order = dump:sub(i*199, (i+1)*199-1)
+		order = "".. dump:sub(i*199, (i+1)*199-1)
 	}})
 end
 for i=0, schunks do
@@ -154,10 +155,10 @@ for i=0, schunks do
 		name = name,
 		time_to_live = 0,
 		speed = 1,
-		order = sdump:sub(i*199, (i+1)*199-1)
+		order = "".. sdump:sub(i*199, (i+1)*199-1)
 	}})
 end
-for i=0, schunks do
+for i=0, nchunks do
 	local name = "ZADV_NDATA_"..i
 	data:extend({
 	{
@@ -165,7 +166,7 @@ for i=0, schunks do
 		name = name,
 		time_to_live = 0,
 		speed = 1,
-		order = ndump:sub(i*199, (i+1)*199-1)
+		order = "".. ndump:sub(i*199, (i+1)*199-1)
 	}})
 end
 
