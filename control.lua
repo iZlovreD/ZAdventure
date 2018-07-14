@@ -224,7 +224,7 @@ end
 -- @param position : {x,y} array current position
 -- @return true if the position inside area, false otherwise
 local function isInsideBounds( position, distance )
-	return Area.inside(Area.expand(Area.construct(0,0,0,0), distance*32), position)
+	return Area.inside(Area.expand(Area.construct(0,0,0,0), (distance or 12)*32), position)
 end
 
 --- Collision check on surface in selected area
@@ -327,10 +327,10 @@ local function GetRandomArea(seed)
 				
 				-- placeing check
 				local placeallow = true
-				if isInsideBounds(pos, ZADV.Data[mn][an].remoteness_min) then
+				if isInsideBounds(pos, ar.remoteness_min or ZADV.Data[mn][an].remoteness_min) then
 					placeallow = false
 					debug('Area "%s-%s" too close starting area', mn, an)
-				elseif ( ZADV.Data[mn][an].remoteness_max ~= 0 and not isInsideBounds(pos, ZADV.Data[mn][an].remoteness_max) ) then
+				elseif ( ZADV.Data[mn][an].remoteness_max ~= 0 and not isInsideBounds(pos, ar.remoteness_max or ZADV.Data[mn][an].remoteness_max) ) then
 					placeallow = false
 					debug('Area "%s-%s" is outside placing bounds', mn, an)
 				end
@@ -722,6 +722,7 @@ end
 
 script.on_init(Init)
 script.on_load(PostInit)
+script.on_nth_tick({11,271},PostInit)
 script.on_event(defines.events.on_chunk_generated, GenerateChunkArea)
 script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
 --script.on_event(defines.events.on_chunk_generated, DelayedGenerateChunkArea)

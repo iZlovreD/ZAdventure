@@ -18,3 +18,10 @@ Version: 1.0.0
 Date: 14/07/2018
   News:
     - Alpha 1.
+---------------------------------------------------------------------------------------------------
+Version: 1.0.1
+Date: 14/07/2018
+  Change:
+    - Change minimal remoteness for all areas.
+   Fixes:
+	- Add additional check for nil values.
