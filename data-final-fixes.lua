@@ -89,6 +89,7 @@ for bpname,bpdata in pairs(list) do
 			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].names_accordance))
 			
 			if bpdata.update_for then
+				bpdata.update_for.data = {}
 				bpdata.update_for.data._mod = modname
 				bpdata.update_for.data._area = bpname
 				bpdata.update_for.data = ZADV.Data[modname][bpname]
