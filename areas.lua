@@ -90,7 +90,7 @@ ret.area['armored rail junction'] = {
 	,max_copies = 3
 	,destructible = false
 	,rotatable = false
-} 
+}
 
 ret.area['lone yellow belt'] = {
 	
