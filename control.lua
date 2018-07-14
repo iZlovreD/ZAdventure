@@ -6,12 +6,14 @@ require 'stdlib/table'
 require 'stdlib/game'
 require 'lib/bplib'
 
+local base64 = require("lib/format/base64")
+local zzlib = require("lib/format/zzlib")
+local json = require("lib/format/json")
+
 --
 -- global variables
 --
 global.ZADV = global.ZADV or {}
-ZADV = global.ZADV or {}
-ZADV.Data = global.ZADV.Data
 global.ZADV_InProcess = false
 global.ZADV_ForceUnlock = false
 
@@ -21,13 +23,20 @@ global.ZADV_ForceUnlock = false
 --
 local format = string.format
 local floor = math.floor
+local serpd = serpent.dump
+local serpb = serpent.block
 
+ZADV = global.ZADV or {}
+ZADV.Data = global.ZADV.Data
 ZADV_initialized = false
 ZADV_ForcedArea = false
 
 Color = {
-	red 	= {r = 1, g = 0, b = 0, a = 0.5},
-	green 	= {r = 0, g = 1, b = 0, a = 0.5}
+	red 	= {r = 1.0, g = 0.2, b = 0.2},
+	green 	= {r = 0.3, g = 0.7, b = 0.0},
+	yellow	= {r = 0.9, g = 0.7, b = 0.0},
+	orange	= {r = 0.9, g = 0.4, b = 0.0},
+	blue	= {r = 0.3, g = 0.7, b = 1.0}
 }
 
 
@@ -95,9 +104,11 @@ local function PostInit()
 	ZADV.blueprint = global.ZADV.blueprint
 	ZADV.Data = global.ZADV.Data
 	ZADV.NamePairList = global.ZADV.NamePairList
-	ZADV.Settings = global.ZADV.Settings
+	ZADV.Replacements = global.ZADV.Data.Replacements
+	
 	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
 	ZADV.UsedTypes = global.ZADV.UsedTypes
+	
 	ZADV.debug = global.ZADV.debug
 	debug("Set debug level: ".. ZADV.debug)
 		
@@ -106,10 +117,7 @@ local function PostInit()
 		BPlib.chunkMarkerArray = BPlib.ParseToArray(BPlib.chunkMarker)
 		debug("Prepare Chunk Marker Array")
 	end
-	
-	-- globals
-	global.generator = game.create_random_generator(game.tick)
-		
+			
 	-- Done
 	ZADV_initialized = true
 	debug("Initialization complete.")
@@ -187,8 +195,11 @@ local function ReInit()
 	-- localize globals
 	ZADV.Data = global.ZADV.Data
 	ZADV.NamePairList = global.ZADV.NamePairList
+	ZADV.Replacements = global.ZADV.Data.Replacements
+	
 	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
 	ZADV.UsedTypes = global.ZADV.UsedTypes
+	
 	ZADV.debug = global.ZADV.debug
 	debug("Set debug level: ".. ZADV.debug)
 	
@@ -221,7 +232,7 @@ end
 -- @param area : BoundingBox {left_top :: Position, right_bottom :: Position}
 -- @return true if area have collision tles, false otherwise
 local function CollisionCheckArea(surface, area)
-	local types = {"unit", "unit-spawner", "corpse", "simple-entity", "container", "resource"}
+	local types = {"unit", "unit-spawner", "corpse", "simple-entity", "container", "resource", "cliff"}
 	for t in pairs(global.ZADV.UsedTypes) do table.insert(types, t) end
 	if surface.count_tiles_filtered{area=area,  collision_mask="water-tile"} > 0
 	or surface.count_entities_filtered{area=area, type=types} > 0
@@ -253,6 +264,10 @@ local function Rnd(min,max,adseed)
 	global.generator.re_seed(seed)
 	return math.min(max, math.max(min, floor(global.generator(min, base(max+global.adseed)) % max) ) )
 end
+--- globalize Rnd function
+function ZADVRnd(min,max,adseed)
+	return Rnd(min,max,adseed)
+end
 
 --- Generate random number
 -- @param T : table
@@ -261,6 +276,14 @@ local function tlength(T)
 	local count = 0
 	for _ in pairs(T) do count = count + 1 end
 	return count
+end
+
+--- Generate random number
+-- @param name : requested name
+-- @return string with possible replacement name
+-- [ not implemented yet ]
+local function getname(name)
+	return name
 end
 
 --- Randomize and prepare new area
@@ -273,7 +296,7 @@ local function GetRandomArea(seed)
 	
 	-- randomize global step
 	local roll = Rnd(1,1000,seed)
-	if not ZADV_ForcedArea and roll > tonumber(ZADV.Settings['zadv_global_frequency']) then return nil end
+	if not ZADV_ForcedArea and roll > tonumber(global.ZADV.Settings['zadv_global_frequency']) * (ZADV.debug + 1) then return nil end
 	
 	-- run through the list of areas
 	local areas = {}
@@ -281,37 +304,45 @@ local function GetRandomArea(seed)
 	
 	for mn,mod in pairs(ZADV.Data) do
 		for an,ar in pairs(mod) do
-		
-			if roll <= ar.probability then
+				
+			-- check if no more copiees alloewd
+			global.ZADV.restrictedareas = global.ZADV.restrictedareas or {}
+			ar.restricted = global.ZADV.restrictedareas[mn ..'-'.. an]
+			
+			if not ar.restricted and roll <= ar.probability * (ZADV.debug + 1) then
 			
 				-- technology check
 				local techallow = false
 				if ar.ignore_technologies then
 					techallow = true
 				elseif ar.techs then
-					techallow = true
+					techallow = false
 					for _,f in pairs(game.forces) do
 					for _,t in pairs(ar.techs) do
-					if not f.technologies[t].researched then
-						techallow = false
-						debug('Not enough technologies for "%s - %s", skip this time..',mn,an)
+					if f.technologies[t].researched then
+						techallow = true
 					end end	end
+					if not techallow then debug('Not enough technologies for "%s - %s", skip this time..',mn,an) end
 				end
 				
 				-- placeing check
 				local placeallow = true
 				if isInsideBounds(pos, ZADV.Data[mn][an].remoteness_min) then
 					placeallow = false
-					debug('Area "%s-%s" in starting area', mn, an)
+					debug('Area "%s-%s" too close starting area', mn, an)
 				elseif ( ZADV.Data[mn][an].remoteness_max ~= 0 and not isInsideBounds(pos, ZADV.Data[mn][an].remoteness_max) ) then
 					placeallow = false
 					debug('Area "%s-%s" is outside placing bounds', mn, an)
 				end
 				
 				-- all checks done
-				if techallow and placeallow then
+				if techallow and placeallow and not ar.restricted then
 					-- store triggered area
 					table.insert(areas, {mn,an})
+					-- if only once or no more copiees
+					global.ZADV.restrictedareas[mn ..'-'.. an] = ar.only_once or ar.max_copies == 0
+					if ar.only_once then debug('Area "%s-%s" only once: %s', mn, an, tostring(global.ZADV.restrictedareas[mn ..'-'.. an])) end
+					if ar.max_copies == 0 then debug('Area "%s-%s" max copies: %s', mn, an, tostring(global.ZADV.restrictedareas[mn ..'-'.. an])) end
 				end
 				
 			end
@@ -319,18 +350,24 @@ local function GetRandomArea(seed)
 	
 	-- if we have multiple triggered areas - choose one
 	if tlength(areas) > 0 then
-		roll = (Rnd(1,100,seed) % #areas) + 1
+		roll = (Rnd(1,1000,seed) % #areas) + 1
 		areas = areas[roll]
 		
 	-- select one if we must
 	elseif ZADV_ForcedArea then
-		roll = (Rnd(1,100,seed) % #ZADV.NamePairList) + 1
+		roll = (Rnd(1,1000,seed) % #ZADV.NamePairList) + 1
 		areas = ZADV.NamePairList[roll]
 		
 	-- nothing to do
 	else return false end
 	
 	ZADV_ForcedArea = false
+	
+	-- decrease copies counter
+	ZADV.Data[areas[1]][areas[2]].max_copies =
+		ZADV.Data[areas[1]][areas[2]].max_copies < 0 and -10
+		or math.max(0, ZADV.Data[areas[1]][areas[2]].max_copies - 1 + (ZADV.debug -1))
+	
 	
 	-- return area
 	return ZADV.Data[areas[1]][areas[2]]
@@ -400,6 +437,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			{center.x-(newarea.area.size.x/2)-1, center.y-(newarea.area.size.y/2)-1},
 			{center.x+(newarea.area.size.x/2)+1, center.y+(newarea.area.size.y/2)+1}
 		}
+		center = Area.center(area)
 		
 		local area2d = newarea.chunkarea
 		area2d.right_bottom.x = area2d.right_bottom.x - 1
@@ -410,7 +448,8 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			bigarea2d.right_bottom.x = bigarea2d.right_bottom.x - 1
 			bigarea2d.right_bottom.y = bigarea2d.right_bottom.y - 1
 		end
-
+		
+		local entities = {}
 		if newarea.finalize_build then					-- modded
 			for k,v in pairs(ghosts) do
 				if v.valid and not v.revive() then
@@ -436,7 +475,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 				-- update used types list
 				global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
 				
-				for _,e in pairs(entities) do
+				for _,e in pairs(entities) do if e and e.valid then 
 				
 					-- store type for future checks
 					global.ZADV.UsedTypes[e.type] = true
@@ -472,34 +511,46 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					e.rotatable = newarea.rotatable
 					
 					-- Script for each entity in new area
-					if type(newarea.ScriptForEach) == 'function' then 
-						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, e, newarea.names or {}, locstor)
-						if not done then debug("\n[%s].ScriptForEach (%s) return with error:\n%s", newarea.name, e.prototype.name, err) end
-					end
+					if type(newarea.ScriptForEach) == 'function' and e and e.valid then 
+						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, newarea.userdata)
+						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 					
-					if ZADV.debug >= 2 and newarea.name:find('maze') then
-						local rndroll, force, entity, namelist, locstore = Rnd(1,1000), newarea.force, e, newarea.names or {}, locstor
-						-- rndroll, game, surface, force, entity, namelist, locstore
-						
-						
-					end
-					
-				end
-				
-				-- Script for all entities in new area
-				if type(newarea.ScriptForAll) == 'function' then
-					local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {})
-					if not done then debug("[\n%s].ScriptForAll return with error:\n%s", newarea.name, err) end
-				end
-					
-				if ZADV.debug >= 2 and newarea.name:find('maze') then
-					local rndroll, force, namelist, entitylist = Rnd(1,1000), newarea.force, newarea.names or {}, entities or {}
-					-- rndroll, game, surface, force, area, center, namelist, entitylist
-			--[[--------------------------------------------------------------------]]--
-			--[[--------------------------------------------------------------------]]--
-				end
+						if ZADV.debug >= 2 and newarea.name:find('bp') then
+							local _testfunc = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, userdata)
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
 			
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+							end
+							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, newarea.userdata)
+							if not done then debug("\n[[DEBUG]]\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
+						end
+						
+					end
+					
+				end end
 			end
+			end
+		
+		
+		-- Script for all entities in new area
+		if type(newarea.ScriptForAll) == 'function' then
+			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, newarea.userdata)
+			if not done then debug("\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
+			
+			if ZADV.debug >= 2 and newarea.name:find('bp') then
+				local _testfunc = function(rndroll, game, surface, force, area, center, namelist, entitylist, userdata)
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+			
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+--[[------------------------------------------------------------------------------------------------------------------------------------]]--
+				end
+				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, newarea.userdata)
+				if not done then debug("\n[[DEBUG]]\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
+			end
+			
 		end
 		
 		-- force chart area
@@ -551,7 +602,17 @@ end
 
 --- new chunk generated event handler
 local function GenerateChunkArea( event )
-
+	
+	local skipgeneration = false
+	
+	-- on chunk charted
+	if event.surface_index then
+		skipgeneration = true
+	end
+	
+	-- skip generation this time
+	if skipgeneration then return true end
+	
 	-- event lock
 	if global.ZADV_InProcess then return
 	else global.ZADV_InProcess = true end
@@ -571,6 +632,12 @@ local function GenerateChunkArea( event )
 	local chunk_position = Chunk.from_position(position)
 	local chunk_data = Chunk.get_data(event.surface, chunk_position) or {}
 	
+	-- check if chunk already charted
+	if game.forces['neutral'].is_chunk_charted(event.surface, chunk_position) then
+		debug("Chunk [%s] already charted.",serpent.block(chunk_position))
+		return
+	end
+	
 	-- check collisions and if true - ignore chunk
 	if CollisionCheckArea(event.surface, event.area) then 
 		chunk_data["generated"] = true
@@ -578,7 +645,7 @@ local function GenerateChunkArea( event )
 	end
 	
 	-- check if chunk already generated or in starting area - ignore if true
-	if chunk_data["generated"] or isInsideBounds(position, ZADV.Settings['zadv_starting_radiius']) then
+	if chunk_data["generated"] or isInsideBounds(position, global.ZADV.Settings['zadv_starting_radiius']) then
 		-- event unlock and exit
 		global.ZADV_InProcess = false
 		Chunk.set_data(event.surface, chunk_position, chunk_data)
@@ -640,7 +707,7 @@ local function GenerateChunkArea( event )
 		-- mark chunk
 		chunk_data["generated"] = true
 		Chunk.set_data(event.surface, chunk_position, chunk_data)
-		
+	
 	end
 	
 	-- event unlock
@@ -648,7 +715,14 @@ local function GenerateChunkArea( event )
 	
 end
 
+--- new chunk generation delayed start
+local function DelayedGenerateChunkArea( event )
+	script.on_nth_tick(game.tick+1, function() GenerateChunkArea( event ) end)
+end
+
 script.on_init(Init)
-script.on_nth_tick({33,666,9999}, PostInit)
-script.on_event(defines.events.on_chunk_generated, 	GenerateChunkArea)
+script.on_load(PostInit)
+script.on_event(defines.events.on_chunk_generated, GenerateChunkArea)
+script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
+--script.on_event(defines.events.on_chunk_generated, DelayedGenerateChunkArea)
 
