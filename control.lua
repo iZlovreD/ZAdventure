@@ -32,6 +32,7 @@ ZADV_initialized = false
 ZADV_ForcedArea = false
 
 Color = {
+	black 	= {r = 0.0, g = 0.0, b = 0.0},
 	red 	= {r = 1.0, g = 0.2, b = 0.2},
 	green 	= {r = 0.3, g = 0.7, b = 0.0},
 	yellow	= {r = 0.9, g = 0.7, b = 0.0},
@@ -515,11 +516,12 @@ local function AplyBlueprintAuto(surface, center, newarea)
 						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, newarea.userdata)
 						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 					
-						if ZADV.debug >= 2 and newarea.name:find('bp') then
+						if ZADV.debug >= 2 and newarea.name:find('maze') then
 							local _testfunc = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, userdata)
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 			
+		
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 							end
@@ -727,3 +729,21 @@ script.on_event(defines.events.on_chunk_generated, GenerateChunkArea)
 script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
 --script.on_event(defines.events.on_chunk_generated, DelayedGenerateChunkArea)
 
+
+--
+-- Console commands
+--
+
+remote.add_interface("ZADV", {
+
+	-- /c remote.call("ZADV", "debug_lvl", 0)
+	debug_lvl = function(lvl)
+		
+		if not lvl then lvl = 0 end
+		if type(lvl) == 'string' then lvl = tonumber(lvl) end
+		if type(lvl) == 'number' then lvl = math.min(3,math.max(0,lvl)) end
+		ZADV.debug = lvl
+		game.print("Debug level set to "..lvl)
+		
+	end,
+})
