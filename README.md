@@ -26,6 +26,7 @@ No noticeable drops of FPS or UPS even on huge maps.
 You can add your own madden areas. Just fork [ZADV_example](https://github.com/iZlovreD/ZADV_example "ZADV_example"), modify, and share it.
 All you need is check areas.lua file and read description inside.
 
+<<<<<<< HEAD
 #
 ### Work plan
 - [x] Creat the mod
@@ -39,3 +40,12 @@ All you need is check areas.lua file and read description inside.
 Good Luck! And sorry for my english. ;)
 
 iZlovreD &copy; 2018 
+=======
+# 
+### Some examples
+https://mods-data.factorio.com/assets/6c1370224bc17ba052cb147065cd136d433a1c44.png
+
+# 
+Good Luck! And sorry for my english. ;)
+iZlovreD &copy; 2018
+>>>>>>> 2f5ba95af8b9c90da369b6562ba55ed3958639e6
