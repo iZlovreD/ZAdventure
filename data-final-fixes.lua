@@ -109,6 +109,8 @@ end end end
 ZADV.ControlString = md5.sumhexa(ZADV.ControlString:gsub("[_- ]",''))
 for _,com in pairs(delete) do local _=loadstring(com); _() end
 
+local total = ' %s Areas in total.%s'
+
 for _,rep in pairs(replace_data) do
 	if  ( rep.mod and type(rep.mod) == 'string' and rep.mod ~= "" )
 	and ( rep.area and type(rep.area) == 'string' and rep.area ~= "" )
@@ -119,12 +121,13 @@ for _,rep in pairs(replace_data) do
 		ZADV.Data[rep._mod][rep._area] = nil
 		
 		replaced = replaced+1
-		
+		total = ' %s Areas in total, %s is replaced.'
 	end
 end
 
 debug(0,'-------------------------------------')
-debug(0,' %s Areas added and %s replaced.', counter, replaced)
+debug(0, total, counter, replaced)
+debug(0,'-------------------------------------')
 
 
 --

@@ -256,6 +256,8 @@ end
 -- @param adseed : additional seed
 -- @return random number
 local function Rnd(min,max,adseed)
+	min = min or 1
+	max = max or 1
 	adseed = adseed or 0
 	global.adseed = global.adseed or 2^16
 	global.adseed = global.adseed + adseed
@@ -263,7 +265,7 @@ local function Rnd(min,max,adseed)
 	local seed = game.tick + floor(tonumber(tostring({}):sub(8,-4))) + adseed
 	global.generator = global.generator or game.create_random_generator(seed)
 	global.generator.re_seed(seed)
-	return math.min(max, math.max(min, floor(global.generator(min, base(max+global.adseed)) % max) ) )
+	return math.min(max, math.max(min, floor(global.generator(min, math.max(min, base(max+global.adseed))) % max) ) )
 end
 --- globalize Rnd function
 function ZADVRnd(min,max,adseed)
@@ -397,11 +399,12 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		-- force
 		if not game.forces[newarea.force] then
-			if type(newarea.force) ~= 'string' then
+			if type(newarea.force) == 'string' then
 				if #game.forces >= 62 then
 					newarea.force = "neutral"
 				else
 					game.create_force(newarea.force)
+					debug("Created new force: ".. newarea.force)
 				end
 			else newarea.force = "neutral" end
 		elseif newarea.force == 'player' and #game.forces > 3 then
@@ -409,7 +412,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			for _,f in pairs(game.forces) do 
 				if f.name ~= 'neutral' and f.name ~= 'enemy' then table.insert(forces, f.name) end
 			end
-			newarea.force = forces[math.min(#game.forces - 2, Rnd(1,#game.forces - 1))]
+			newarea.force = forces[Rnd(1,#forces)]
 			debug("Selected force: ".. newarea.force)
 		end
 		
@@ -516,12 +519,11 @@ local function AplyBlueprintAuto(surface, center, newarea)
 						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, newarea.userdata)
 						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 					
-						if ZADV.debug >= 2 and newarea.name:find('maze') then
+						if ZADV.debug >= 2 and newarea.name:find('occupied') then
 							local _testfunc = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, userdata)
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 			
-		
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 							end
@@ -533,7 +535,9 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					
 				end end
 			end
-			end
+		else
+			entities = ghosts
+		end
 		
 		
 		-- Script for all entities in new area
@@ -541,11 +545,11 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, newarea.userdata)
 			if not done then debug("\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
 			
-			if ZADV.debug >= 2 and newarea.name:find('bp') then
+			if ZADV.debug >= 2 and newarea.name:find('occupied') then
 				local _testfunc = function(rndroll, game, surface, force, area, center, namelist, entitylist, userdata)
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
-			
+		
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 				end
@@ -554,6 +558,9 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			end
 			
 		end
+		
+		-- remove unfinished deconstruction
+		surface.cancel_deconstruct_area{area=area, force=newarea.force, player=…}
 		
 		-- force chart area
 		if ZADV.debug >= 2 or newarea.force_reveal then
@@ -731,7 +738,7 @@ script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
 
 
 --
--- Console commands
+-- Script commands
 --
 
 remote.add_interface("ZADV", {
@@ -741,9 +748,13 @@ remote.add_interface("ZADV", {
 		
 		if not lvl then lvl = 0 end
 		if type(lvl) == 'string' then lvl = tonumber(lvl) end
-		if type(lvl) == 'number' then lvl = math.min(3,math.max(0,lvl)) end
-		ZADV.debug = lvl
-		game.print("Debug level set to "..lvl)
+		if type(lvl) == 'number' then
+			lvl = math.min(3,math.max(0,lvl))
+			if ZADV.debug ~= lvl then game.print("Debug level set to "..lvl) end
+			ZADV.debug = lvl
+		else
+			game.print("Incorrect 3rd argument, number expected")
+		end
 		
 	end,
 })
