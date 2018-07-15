@@ -456,6 +456,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		local entities = {}
 		if newarea.finalize_build then					-- modded
 			for k,v in pairs(ghosts) do
+				local _,_e
 				if v.valid and not v.revive() then
 					for _,e in pairs(surface.find_entities_filtered{
 						area=v.bounding_box,
@@ -468,7 +469,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			
 			if newarea.names then
 				
-				local entities = surface.find_entities_filtered{
+				entities = surface.find_entities_filtered{
 					area=area,
 					name=newarea.names
 				}
@@ -515,7 +516,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					e.rotatable = newarea.rotatable
 					
 					-- Script for each entity in new area
-					if type(newarea.ScriptForEach) == 'function' and e and e.valid then 
+					if type(newarea.ScriptForEach) == 'function' then 
 						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, newarea.userdata)
 						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 					
@@ -545,10 +546,11 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, newarea.userdata)
 			if not done then debug("\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
 			
-			if ZADV.debug >= 2 and newarea.name:find('occupied') then
+			if ZADV.debug >= 2 and newarea.name:find('recipe') then
 				local _testfunc = function(rndroll, game, surface, force, area, center, namelist, entitylist, userdata)
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
+
 		
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
@@ -560,7 +562,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		end
 		
 		-- remove unfinished deconstruction
-		surface.cancel_deconstruct_area{area=area, force=newarea.force, player=…}
+		surface.cancel_deconstruct_area{area=area, force=newarea.force}
 		
 		-- force chart area
 		if ZADV.debug >= 2 or newarea.force_reveal then
