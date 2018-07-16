@@ -27,9 +27,9 @@ function BPlib.CalculateAreaData(input)
 	local ret = {}
 	local area = {
 		left_top 	 = {x=0,y=0},
-		right_bottom = {x=0,y=0},
-		size 		 = {x=0,y=0},
-		dim			 = {x=0,y=0},
+		right_bottom = {x=1,y=1},
+		size 		 = {x=1,y=1},
+		dim			 = {x=1,y=1},
 		offset 		 = {x=0,y=0}
 	} 
 	
@@ -98,14 +98,17 @@ function BPlib.CalculateAreaData(input)
 			
 		end
 		
+		area.right_bottom.x = area.right_bottom.x < 0 and area.right_bottom.x or math.max(1,area.right_bottom.x)
+		area.right_bottom.y = area.right_bottom.y < 0 and area.right_bottom.y or math.max(1,area.right_bottom.y)
+		
 		area.size.x = math.max(1, math.abs(area.left_top.x - area.right_bottom.x))
 		area.size.y = math.max(1, math.abs(area.right_bottom.y - area.left_top.y))
 		
 		area.dim.y = math.max(1, math.ceil(area.size.y / 32))
 		area.dim.x = math.max(1, math.ceil(area.size.x / 32))
 		
-		area.offset.y = math.ceil((area.size.y - 32) / 2)
-		area.offset.x = math.ceil((area.size.x - 32) / 2)
+		area.offset.y = math.floor((area.size.y- 32) / 2 + 16)
+		area.offset.x = math.floor((area.size.x- 32) / 2 + 16)
 		
 	end
 	

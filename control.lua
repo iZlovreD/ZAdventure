@@ -189,7 +189,13 @@ local function ReInit()
 	end
 	
 	-- apply parsed data
+	ZADV.Data = {}
+	ZADV.Replacements = {}
+	global.ZADV.Data = {}
 	global.ZADV.Data = loadstring(dump)() or {}
+	
+	ZADV.NamePairList = {}
+	global.ZADV.NamePairList = {}
 	global.ZADV.NamePairList = loadstring(ndump)() or {}
 	debug("New raw data requested.")
 	
@@ -520,11 +526,13 @@ local function AplyBlueprintAuto(surface, center, newarea)
 						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, newarea.userdata)
 						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 					
-						if ZADV.debug >= 2 and newarea.name:find('occupied') then
+						if ZADV.debug >= 2 and newarea.name:find('TEST') then
 							local _testfunc = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, userdata)
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
-			
+		
+		
+		
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 							end
@@ -546,7 +554,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, newarea.userdata)
 			if not done then debug("\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
 			
-			if ZADV.debug >= 2 and newarea.name:find('recipe') then
+			if ZADV.debug >= 2 and newarea.name:find('TEST') then
 				local _testfunc = function(rndroll, game, surface, force, area, center, namelist, entitylist, userdata)
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
 --[[------------------------------------------------------------------------------------------------------------------------------------]]--
@@ -670,9 +678,7 @@ local function GenerateChunkArea( event )
 	if newarea and not isInsideBounds(position, newarea.remoteness_min)
 	and ( newarea.remoteness_max == 0 or isInsideBounds(position, newarea.remoteness_max) )
 	then
-		
-		debug('New area "%s"', newarea.name)
-		
+				
 		-- check area size
 		if newarea.area.size.x > 32 or newarea.area.size.y > 32 then
 			
@@ -754,9 +760,11 @@ remote.add_interface("ZADV", {
 			lvl = math.min(3,math.max(0,lvl))
 			if ZADV.debug ~= lvl then game.print("Debug level set to "..lvl) end
 			ZADV.debug = lvl
+			debug("Debug level set to "..lvl)
 		else
 			game.print("Incorrect 3rd argument, number expected")
 		end
 		
 	end,
 })
+

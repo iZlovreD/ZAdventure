@@ -8,9 +8,27 @@ local delete = {}
 local replace_data = {}
 local counter = 0
 local replaced = 0
+
+ZADV.ControlString = ""
+
+if ZADV.TEST_MODE then
+	local area = {}
+	for modname,list in pairs( ZADV.Data ) do
+	for bpname,bpdata in pairs(list) do
+		if bpname == "TEST_MODE" then
+			area = bpdata
+			ZADV.debug = 2
+		end
+	end end
+	
+	ZADV.Data = {}
+	ZADV.Data["TEST"] = {}
+	ZADV.Data["TEST"]["TEST"] = area
+end
+
 for modname,list in pairs( ZADV.Data ) do
 for bpname,bpdata in pairs(list) do
-	
+			
 	-- check for empty area
 	if bpdata.bp and type(bpdata.bp) == "string" and bpdata.bp:len() > 0
 	and ((settings.startup["zadv_experemental"].value and bpdata.experemental) or not bpdata.experemental)
@@ -21,7 +39,7 @@ for bpname,bpdata in pairs(list) do
 		if not bpdata.update_for then table.insert(ZADV.NamePairList, {modname,bpname} ) end
 		
 		-- prepare control string
-		ZADV.ControlString = (ZADV.ControlString or "") .. modname .. bpname
+		ZADV.ControlString = ZADV.ControlString .. modname .. bpname
 		
 		-- parse blueprint string into readable format
 		local _data = BPlib.CalculateAreaData(bpdata.bp)
@@ -126,7 +144,7 @@ for _,rep in pairs(replace_data) do
 end
 
 debug(0,'-------------------------------------')
-debug(0, total, counter, replaced)
+debug(0, total, counter, replaced>0 and replaced or "")
 debug(0,'-------------------------------------')
 
 
