@@ -13,7 +13,6 @@ require 'util'
 global.ZADV = global.ZADV or {}
 global.ZADV_InProcess = false
 global.ZADV_ForceUnlock = false
-global.ZADV_ForceUnlock = false
 global.ZADV_EventLock = 0
 
 
@@ -26,9 +25,12 @@ local format = string.format
 local floor = math.floor
 local serpd = serpent.dump
 local serpb = serpent.block
-local ZADV = {}
-local ZADV_initialized = false
-local ZADV_ForcedArea = false
+
+ZADV = global.ZADV or {}
+ZADV.Data = global.ZADV.Data
+ZADV.Events = { OnTick = {} }
+ZADV_initialized = false
+ZADV_ForcedArea = false
 
 Color = {
 	black 	= {r = 0.0, g = 0.0, b = 0.0},
@@ -47,12 +49,14 @@ ZADV.debug = 0
 
 function debug ( msg, ... )
 	if type(msg) == 'table' then
-		if ZADV.debug >= 1 then log("\n[[ZADV]] ".. serpent.block(msg)) end
+		if ZADV.debug >= 1 then
+		log("\n[[ZADV]] ".. serpent.block(msg))
+		end
 	else
 		if type(msg) ~= 'string' then
 			msg = tostring(msg)
 		end
-		if ZADV.debug >= 1 then log("[[ZADV]] ".. format(msg,...)) end
+		log("[[ZADV]] ".. format(msg,...))
 		if ZADV.debug >= 2 and game and string.len(msg) <= 200 then
 			game.print(format(msg,...))
 		end
@@ -65,7 +69,7 @@ end
 --
 
 --- Prepare operable blueprint
-local function PrepareBlueprint()
+function PrepareBlueprint()
 	
 	if not global.ZADV.blueprint then
 		
@@ -82,8 +86,25 @@ local function PrepareBlueprint()
 			
 		end
 		
-		global.ZADV.blueprint = global.ZADV.entity.get_inventory(defines.inventory.chest).find_item_stack("blueprint")
+		global.ZADV.blueprint = ZADV.entity.get_inventory(defines.inventory.chest).find_item_stack("blueprint")
 		debug("Creating operable blueprint")
+		
+	end
+	
+end
+
+-- global on_tick handler
+function On_Ticker(event)
+	
+	if global.ZADV_EventLock ~= game.tick then
+		global.ZADV_EventLock = game.tick
+		
+		if ZADV.Events and ZADV.Events.OnTicks then
+			for name,data in pairs(ZADV.Events.OnTicks) do
+				local done, err = pcall(data.func, event, game, data.data)
+				if not done then debug("\n[%s].on_tick return with error:\n%s", name, err) end
+			end
+		end
 		
 	end
 	
@@ -92,27 +113,74 @@ end
 --- Reassign events after loadstring
 local function ReEvent()
 
-	global.ZADV.Events = global.ZADV.Events or {}
+	ZADV.adata = global.ZADV.adata or {}
 	
-	for event,data in pairs(global.ZADV.Events) do
-		if not script.get_event_handler(event) then
-			script.on_event(event, Global_Handler)
-		end
+	for name,data in pairs(ZADV.adata) do
+		for x,xd in pairs(data) do
+			if type(xd) == 'table' then
+				for y,ad in pairs(xd) do
+					local unser = loadstring(ad.serdata)() or {}
+					--debug('Re-assing event handlers for %s %s',name,serpb(unser))
+					for event,func in pairs(unser) do
+						ZADV.Events = ZADV.Events or {}
+						ZADV.Events.OnTicks = ZADV.Events.OnTicks or {}
+						ZADV.Events.OnTicks[name] = {data=ad.data, func=func}
+	end end end end end
+	
+end
+
+--- Post initialization
+local function PostInit()
+
+	-- skip if already done
+	if ZADV_initialized then return end
+	
+	-- creating blueprint instance
+	PrepareBlueprint()
+	
+	-- localize globals
+	ZADV.blueprint = global.ZADV.blueprint
+	ZADV.Data = global.ZADV.Data
+	ZADV.NamePairList = global.ZADV.NamePairList
+	ZADV.Replacements = global.ZADV.Data.Replacements
+	
+	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
+	ZADV.UsedTypes = global.ZADV.UsedTypes
+	
+	ZADV.debug = global.ZADV.debug
+	debug("Set debug level: ".. ZADV.debug)
+		
+	-- debug dependings
+	if ZADV.debug >= 2 then
+		BPlib.chunkMarkerArray = BPlib.ParseToArray(BPlib.chunkMarker)
+		debug("Prepare Chunk Marker Array")
 	end
+	
+	-- re-event
+	debug('Prepare events')
+	ReEvent()
+	script.on_event(defines.events.on_tick, On_Ticker)
+	
+	-- Done
+	ZADV_initialized = true
+	debug("Initialization complete.")
 	
 end
 
 --- Global initialization
-local function Init()
+function Init()
+	
+	-- creating blueprint instance
+	PrepareBlueprint()
+	
 	
 	--parse raw data
 	local dump, sdump, ndump = "", "", ""
 	local chunks = game.entity_prototypes["ZADV_DATA_C"].order
 	local schunks = game.entity_prototypes["ZADV_SDATA_C"].order
 	local nchunks = game.entity_prototypes["ZADV_NDATA_C"].order
-	global.ZADV.ControlString = game.entity_prototypes["ZADV_DATA_CS"].order
-	ZADV.debug = tonumber(game.entity_prototypes["ZADV_DATA_D"].order)
-	debug("Set debug level: ".. ZADV.debug)
+	global.ZADV.ControlString = game.entity_prototypes["ZADV_DATA_MD"].order
+	global.ZADV.debug = tonumber(game.entity_prototypes["ZADV_DATA_D"].order)
 	
 	for i=0, chunks-1 do
 		local name = "ZADV_DATA_"..i
@@ -129,80 +197,63 @@ local function Init()
 		ndump = ndump .. game.entity_prototypes[name].order
 	end
 	
+	
 	-- apply parsed data
-	ZADV.Data = loadstring(dump)() or {}
-	ZADV.Settings = loadstring(sdump)() or {}
-	ZADV.NamePairList = loadstring(ndump)() or {}
+	global.ZADV.Data = loadstring(dump)() or {}
+	global.ZADV.Settings = loadstring(sdump)() or {}
+	global.ZADV.NamePairList = loadstring(ndump)() or {}
 	debug("Raw data requested.")
 	
-	-- set globals
-	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
 	
-end
-local function PostInit()
+	-- localize globals
+	PostInit()
 	
-	if not ZADV.Data or not ZADV.Settings or not ZADV.NamePairList then
-		Init()
-		ZADV_initialized = false
-	end
-	
-	
-	-- info about new data
-	if not global.ZADV.ControlString
-	or game.entity_prototypes["ZADV_DATA_CS"].order ~= global.ZADV.ControlString
-	then 
-		game.print("[ZAdv] New or updated areas found. Start re-initialization...", Color.green)
-		debug("Old seed:\t".. global.ZADV.ControlString)
-		debug("New seed:\t".. game.entity_prototypes["ZADV_DATA_MD"].order)
-		Init()
-		ZADV_initialized = false
-	end
-	
-	if not ZADV_initialized then
-		ZADV_initialized = true
-		
-		-- creating blueprint instance
-		PrepareBlueprint()
-		
-		-- events
-		debug('Prepare events')
-		ReEvent()
-		
-		debug("Initialization complete.")
-		debug("Initialization complete. %s", serpb(global.ZADV))
-		
-	end
 end
 
---- Global handler
-function Global_Handler(event)
+--- New data re-initialization
+local function ReInit()
 	
-	if global.ZADV_EventLock ~= game.tick then
-		global.ZADV_EventLock = game.tick
-		
-		PostInit()
-		
-		for id,data in pairs(global.ZADV.Events) do
-			for dname,edata in pairs(data) do
-				if type(ZADV.Data[edata.mod][edata.area].Events[id]) == 'function'
-				and global.ZADV.ArData[dname]then
-					for indx,ardata in pairs(global.ZADV.ArData[dname]) do
-						if not ardata.disabled and ((event.name == 0 and event.tick % 10 == indx % 10) or event.name ~= 0) then
-							local done, err = pcall(ZADV.Data[edata.mod][edata.area].Events[id], event,  global.ZADV.ArData[dname][indx], game)
-							if not done and err then debug("\n[%s].on_event[%s] return with error:\n%s", dname, id, err) end
-						elseif ardata.disabled then
-							global.ZADV.ArData[dname][indx] = nil
-							local cnt = 0
-							for i in pairs(global.ZADV.ArData[dname]) do cnt = cnt+1 end
-							if cnt == 0 then global.ZADV.ArData[dname] = nil end
-						end
-					end
-				end
-			end
-		end
-		
+	--parse raw data
+	local dump, sdump, ndump = "", "", ""
+	local chunks = game.entity_prototypes["ZADV_DATA_C"].order
+	local nchunks = game.entity_prototypes["ZADV_NDATA_C"].order
+	global.ZADV.debug = tonumber(game.entity_prototypes["ZADV_DATA_D"].order)
+	global.ZADV.ControlString = game.entity_prototypes["ZADV_DATA_MD"].order
+	
+	for i=0, chunks-1 do
+		local name = "ZADV_DATA_"..i
+		dump = dump .. game.entity_prototypes[name].order
 	end
+	
+	for i=0, nchunks-1 do
+		local name = "ZADV_NDATA_"..i
+		ndump = ndump .. game.entity_prototypes[name].order
+	end
+	
+	-- apply parsed data
+	ZADV.Data = {}
+	ZADV.Replacements = {}
+	global.ZADV.Data = {}
+	global.ZADV.Data = loadstring(dump)() or {}
+	
+	ZADV.NamePairList = {}
+	global.ZADV.NamePairList = {}
+	global.ZADV.NamePairList = loadstring(ndump)() or {}
+	debug("New raw data requested.")
+	
+	-- localize globals
+	ZADV.Data = global.ZADV.Data
+	ZADV.NamePairList = global.ZADV.NamePairList
+	ZADV.Replacements = global.ZADV.Data.Replacements
+	
+	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
+	ZADV.UsedTypes = global.ZADV.UsedTypes
+	
+	ZADV.debug = global.ZADV.debug
+	debug("Set debug level: ".. ZADV.debug)
+	
 end
+
 
 
 --
@@ -217,7 +268,7 @@ local function base( int )
 	return floor((int < 0 and 0 - int or int)  + 0.5)
 end
 
---- Check if position inside restricted area
+--- Check if position inside restrcted area
 -- @param distance : from position in chunks
 -- @param position : {x,y} array current position
 -- @return true if the position inside area, false otherwise
@@ -286,20 +337,6 @@ local function getname(name)
 	return name
 end
 
---- Find nearest players
--- @param pos : relative position
--- @return LuaPlayer table
-local function FindNearestPlayer(pos)
-	local indx = 0
-	local dist = false
-	for i,p in pairs(game.connected_players) do
-		if not dist or Position.distance(pos, p.position) < dist then
-			indx = i; dist = Position.distance(pos, p.position)
-		end
-	end
-	return game.connected_players[indx] or false
-end
-
 --- Randomize and prepare new area
 -- @param seed : center of new chunk
 -- @return table area data
@@ -310,43 +347,18 @@ local function GetRandomArea(seed)
 	
 	-- randomize global step
 	local roll = Rnd(1,1000,seed)
-	if not ZADV_ForcedArea and roll > tonumber(ZADV.Settings['zadv_global_frequency']) * (ZADV.debug + 1) then return nil end
+	if not ZADV_ForcedArea and roll > tonumber(global.ZADV.Settings['zadv_global_frequency']) * (ZADV.debug + 1) then return nil end
 	
 	-- run through the list of areas
 	local areas = {}
 	roll = Rnd(1,1000,seed)
 	
-	
 	for mn,mod in pairs(ZADV.Data) do
 		for an,ar in pairs(mod) do
-			
+				
 			-- check if no more copiees alloewd
 			global.ZADV.restrictedareas = global.ZADV.restrictedareas or {}
-			
-			-- unicality check
-			if ar.unique and ar.force == 'player' then
-			
-				global.ZADV.uniqueforces = global.ZADV.uniqueforces or {}
-				global.ZADV.uniqueforces[ar.name] = global.ZADV.uniqueforces[ar.name] or {}
-				
-				local forces = {}
-				for _,f in pairs(game.forces) do
-					if not global.ZADV.uniqueforces[ar.name][f.name]
-					and f.name ~= 'neutral' and f.name ~= 'enemy' and not f.name:find('ZADV_')
-					then
-						table.insert(forces,f.name)
-					end
-				end
-				
-				if not forces[1] then
-					global.ZADV.restrictedareas[ar.name] = true
-				else
-					ZADV.Data[mn][an].current_force = forces[Rnd(1,#forces,seed)] or ar.current_force
-				end
-				
-			else ZADV.Data[mn][an].unique = false end
-			
-			ar.restricted = global.ZADV.restrictedareas[ar.name]
+			ar.restricted = global.ZADV.restrictedareas[mn ..'-'.. an]
 			
 			if not ar.restricted and roll <= ar.probability * (ZADV.debug + 1) then
 			
@@ -361,23 +373,27 @@ local function GetRandomArea(seed)
 					if f.technologies[t].researched then
 						techallow = true
 					end end	end
-					--if not techallow then debug('Not enough technologies for "%s - %s", skip this time..',mn,an) end
+					if not techallow then debug('Not enough technologies for "%s - %s", skip this time..',mn,an) end
 				end
 				
 				-- placeing check
 				local placeallow = true
 				if isInsideBounds(pos, ar.remoteness_min or ZADV.Data[mn][an].remoteness_min) then
 					placeallow = false
-					--debug('Area "%s-%s" too close starting area', mn, an)
+					debug('Area "%s-%s" too close starting area', mn, an)
 				elseif ( ZADV.Data[mn][an].remoteness_max ~= 0 and not isInsideBounds(pos, ar.remoteness_max or ZADV.Data[mn][an].remoteness_max) ) then
 					placeallow = false
-					--debug('Area "%s-%s" is outside placing bounds', mn, an)
+					debug('Area "%s-%s" is outside placing bounds', mn, an)
 				end
 				
 				-- all checks done
 				if techallow and placeallow and not ar.restricted then
 					-- store triggered area
 					table.insert(areas, {mn,an})
+					-- if only once or no more copiees
+					global.ZADV.restrictedareas[mn ..'-'.. an] = ar.only_once or ar.max_copies == 0
+					if ar.only_once then debug('Area "%s-%s" only once: %s', mn, an, tostring(global.ZADV.restrictedareas[mn ..'-'.. an])) end
+					if ar.max_copies == 0 then debug('Area "%s-%s" max copies: %s', mn, an, tostring(global.ZADV.restrictedareas[mn ..'-'.. an])) end
 				end
 				
 			end
@@ -403,16 +419,6 @@ local function GetRandomArea(seed)
 		ZADV.Data[areas[1]][areas[2]].max_copies < 0 and -10
 		or math.max(0, ZADV.Data[areas[1]][areas[2]].max_copies - 1 + (ZADV.debug -1))
 	
-	if ZADV.Data[areas[1]][areas[2]].unique then
-		global.ZADV.uniqueforces[ZADV.Data[areas[1]][areas[2]].name][ZADV.Data[areas[1]][areas[2]].current_force] = true
-	end
-	
-	-- if only once or no more copiees
-	if ZADV.Data[areas[1]][areas[2]].only_once
-	or ZADV.Data[areas[1]][areas[2]].max_copies >=0 then
-		global.ZADV.restrictedareas[ZADV.Data[areas[1]][areas[2]].name] =
-			ZADV.Data[areas[1]][areas[2]].only_once or ZADV.Data[areas[1]][areas[2]].max_copies == 0
-	end
 	
 	-- return area
 	return ZADV.Data[areas[1]][areas[2]]
@@ -430,14 +436,12 @@ end
 -- @param newarea : blueprint to build
 local function AplyBlueprintAuto(surface, center, newarea)
 	
-	debug("New area: %s",newarea.name)
-	
 	-- fault check
 	if not newarea or not center or not surface then return end
 	
 	-- prepare blueprint
-	global.ZADV.blueprint.import_stack(newarea.bp)
-	if global.ZADV.blueprint.is_blueprint_setup() then
+	ZADV.blueprint.import_stack(newarea.bp)
+	if ZADV.blueprint.is_blueprint_setup() then
 		
 		--[[ adapt blueprint options ]]--
 		
@@ -470,9 +474,9 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		--[[ place blueprint on surface ]]--
 		--debug("place bp @ %s", serpent.block(center))
-		local ghosts = global.ZADV.blueprint.build_blueprint{
+		local ghosts = ZADV.blueprint.build_blueprint{
 			surface=surface,
-			force=game.forces[newarea.current_force],	-- modded
+			force=game.forces[newarea.force],			-- modded
 			position=center,
 			force_build=newarea.force_build,			-- modded
 			direction=newarea.direction,				-- modded
@@ -485,7 +489,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			{center.x-(newarea.area.size.x/2)-1, center.y-(newarea.area.size.y/2)-1},
 			{center.x+(newarea.area.size.x/2)+1, center.y+(newarea.area.size.y/2)+1}
 		}
-		local _center = Area.center(area)
+		center = Area.center(area)
 		
 		local area2d = newarea.chunkarea
 		area2d.right_bottom.x = area2d.right_bottom.x - 1
@@ -498,9 +502,14 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		end
 		
 		-- prepare areadata
-		global.ZADV.ArData = global.ZADV.ArData or {}
-		local areadata = table.deepcopy(newarea.areadata) or {}
-
+		ZADV.adata = global.ZADV.adata or {}
+		ZADV.adata[newarea.name] = ZADV.adata[newarea.name] or {}
+		ZADV.adata[newarea.name][center.x] = ZADV.adata[newarea.name][center.x] or {}
+		ZADV.adata[newarea.name][center.x][center.y] = ZADV.adata[newarea.name][center.x][center.y] or {
+																										data = newarea.areadata or {},
+																										events = {}
+																									}
+		
 		local entities = {}
 		if newarea.finalize_build then					-- modded
 			for k,v in pairs(ghosts) do
@@ -565,21 +574,58 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					
 					-- Script for each entity in new area
 					if type(newarea.ScriptForEach) == 'function' then
-					
-						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, _center, e, newarea.names or {}, locstor, areadata)
+						ZADV.adata = global.ZADV.adata or {}
+						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, ZADV.adata[newarea.name][center.x][center.y].data or {})
 						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 						
 						if ZADV.debug >= 2 and newarea.name:find('TEST') then
-							local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, entity, namelist, locstore, areadata)
--------------------------------------------------------------------------------------------------------------------------------------------
+							local _testfunc = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, areadata)
+--[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 ----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
 --[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 		
---[[-------------------------------------------------------------------------------------------------------------------------------]]--]]--
-----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
--------------------------------------------------------------------------------------------------------------------------------------------
-							end))()
-							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.force, area, _center, e, newarea.names or {}, locstor, areadata)
+		local function _data(ent) return {
+			entity=entity,
+			position=entity.position,
+			direction=entity.direction,
+			connected_entities=entity.circuit_connected_entities,
+			connection_definitions=entity.circuit_connection_definitions,
+			control_behavior=entity.get_control_behavior()
+		} end
+		
+		if entity and entity.valid and entity.prototype.name == "iron-chest" then
+			entity.operable = true
+			if entity.position.x > center.x then 
+				areadata.chest_in = _data(entity)
+			else
+				areadata.chest_out = _data(entity)
+			end
+			
+		elseif entity and entity.valid and entity.prototype.name == "constant-combinator" then
+			if entity.position.x > center.x then 
+				areadata.const_right = _data(entity)
+			else
+				areadata.const_left = _data(entity)
+			end
+			
+		elseif entity and entity.valid and entity.prototype.name == "decider-combinator" then
+			areadata.decider = _data(entity)
+			
+		elseif entity and entity.valid and entity.prototype.name == "gate" then
+			if entity.position.x > center.x then 
+				areadata.gate_right = _data(entity)
+			else
+				areadata.gate_left = _data(entity)
+				entity.active = false
+			end
+		end
+		
+		
+--[[-----------------------------------------------------------------------------------------------------------------------------------]]--]]--
+----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
+--[[-----------------------------------------------------------------------------------------------------------------------------------]]--]]--
+							end
+							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.force, area, center, e, newarea.names or {}, locstor, ZADV.adata[newarea.name][center.x][center.y].data or {})
 							if not done then debug("\n[[DEBUG]]\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
 						end
 						
@@ -594,69 +640,146 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		-- Script for all entities in new area
 		if type(newarea.ScriptForAll) == 'function' then
-		
-			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, _center, newarea.names or {}, entities or {}, areadata)
+			ZADV.adata = global.ZADV.adata
+			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, ZADV.adata[newarea.name][center.x][center.y].data or {}, ZADV.adata[newarea.name][center.x][center.y].events or {})
 			if not done then debug("\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
 			
 			if ZADV.debug >= 2 and newarea.name:find('TEST') then
-				local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
--------------------------------------------------------------------------------------------------------------------------------------------
+				local _testfunc = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, onTick_events)
+--[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 ----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
 --[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 		
---[[-------------------------------------------------------------------------------------------------------------------------------]]--]]--
-----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
--------------------------------------------------------------------------------------------------------------------------------------------
-				end))()
-				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.force, area, _center, newarea.names or {}, entities or {}, areadata)
-				if not done then debug("\n[[DEBUG]]\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
-			end
-		end
+		areadata.area = area
+		areadata.surface = surface
 		
-		-- Event handling
-		
-		if ZADV.debug >= 2 and newarea.name:find('TEST') then
-		--	ZADV.Data[newarea.modname][newarea.bpname].Events = loadstring(serpd({
--------------------------------------------------------------------------------------------------------------------------------------------
-----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
---[[-----------------------------------------------------------------------------------------------------------------------------------]]--
-		
---[[-------------------------------------------------------------------------------------------------------------------------------]]--]]--
-----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
--------------------------------------------------------------------------------------------------------------------------------------------
-		--	}))()
-		end
-		
-		if ZADV.Data[newarea.modname][newarea.bpname].Events and type(ZADV.Data[newarea.modname][newarea.bpname].Events) == 'table' then
-			for evnt,func in pairs(ZADV.Data[newarea.modname][newarea.bpname].Events) do
-				if type(func) == 'function' then
-					global.ZADV.Events[evnt] = global.ZADV.Events[evnt] or {}
-					global.ZADV.Events[evnt][newarea.name] = {mod = newarea.modname, area = newarea.bpname}
+		-----------------------------------------------------------------------------------------------
+		onTick_events[0] = function(event,game,ad) if game.tick % 10 <= 1 then
+			
+			if not ad.disabled then
+				
+				local function IntegrityCheck()
+					if 30> ad.surface.count_entities_filtered{name='stone-wall', area=Area.shrink(ad.area, 2)}
+					or 2 > ad.surface.count_entities_filtered{name='solar-panel', area=Area.shrink(ad.area, 2)}
+					or 1 > ad.surface.count_entities_filtered{name='substation', area=Area.shrink(ad.area, 2)}
+					or 2 > ad.surface.count_entities_filtered{name='constant-combinator', area=Area.shrink(ad.area, 2)}
+					or 1 > ad.surface.count_entities_filtered{name='decider-combinator', area=Area.shrink(ad.area, 2)}
+					or 2 > ad.surface.count_entities_filtered{name='pipe-to-ground', area=Area.shrink(ad.area, 2)}
+					or 2 > ad.surface.count_entities_filtered{name='iron-chest', area=Area.shrink(ad.area, 2)}
+					or 2 > ad.surface.count_entities_filtered{name='gate', area=Area.shrink(ad.area, 2)}
+					then return false else return true end
+				end	
+				if not IntegrityCheck() then
+					for _,ent in pairs(ad.surface.find_entities_filtered{name={'stone-wall','solar-panel','substation','substation','constant-combinator','decider-combinator','pipe-to-ground','iron-chest','gate'}, area=Area.shrink(ad.area, 2)}) do
+						ent.destroy()
+					end
+					ad.disabled = true
+					return
 				end
-			end
-		end
+				
+					--[[--
+				local function ChangeRecipe()
+				
+					if not ad.decider.entity or not ad.decider.entity.valid then
+						ad.decider.entity = ad.surface.find_entities_filtered{name='decider-combinator', area=Area.shrink(ad.area, 4), limit=1}
+					elseif not ad.decider.entity or not ad.decider.entity.valid then
+						ad.disabled = true
+						return
+					end
+					
+					local possible_recipes = {}
+					for _,force in pairs(game.forces) do
+						if force.name ~= 'neutral' and force.name ~= 'enemy' then
+							for _,r in pairs(force.recipes) do
+								local alowed = true
+								for _,dr in pairs(ad.dissalowed_recipes) do
+									if dr == r.name then alowed = false end
+								end
+								if alowed and not r.hidden and not r.enabled and not r.name:find('creative-mode') then
+									possible_recipes[r.name] = true
+								end
+							end
+						end
+					end 
+					for _,force in pairs(game.forces) do
+						if force.name ~= 'neutral' and force.name ~= 'enemy' then
+							for _,r in pairs(force.recipes) do
+								if not r.hidden and possible_recipes[r.name] and r.enabled then
+									possible_recipes[r.name] = nil
+								end
+							end
+						end
+					end 
+					
+					--  "<", ">", "=", "≥", "≤", "≠"
+					ad.decider.current_conditions = {comparator = "≠", output_signal = {type="virtual", name="signal-ex"}}
+					
+					for i=1, ZADVRnd(1,#possible_recipes,game.tick) do 
+						if possible_recipes[rec] then
+							rec = possible_recipes[rec]
+						else ad.gifted = true
+						end
+					end
+					
+					
+					
+					ad.decider.entity.destroy()
+					ad.decider.entity = ad.surface.create_entity{
+						name='decider-combinator',
+						position=ad.decider.position,
+						direction=ad.decider.direction,
+						force='neutral',
+						control_behavior = {
+							decider_conditions = new_conditions
+						}
+					}
+					
+					
+				end
+					--]]--
+				if ad.nextchange then
+					if ad.nextchange < game.tick then
+						debug("Change recipe")
+						--ChangeRecipe()
+						ad.nextchange = game.tick +600 --2^14
+						ad.nextcheck = game.tick +300
+					end
+				else ad.nextchange = game.tick end
+				
+				
+				if ad.nextcheck then
+					if ad.nextcheck < game.tick then
+						debug("Check items")
+						ad.nextcheck = game.tick +300
+					end
+				else ad.nextcheck = game.tick end
+				
+				
+				
+				--player.print({'message.zadv_discover_recipe', player.force.recipe[rec].prototype.localised_name}, Color.green)
+				--game.players[1].force.play_sound{path="utility/game_won", position=game.players[1].position, volume_modifier=0.7}
+			
+		end end end
+		-----------------------------------------------------------------------------------------------
 		
-		-- save areadata
-		if type(areadata) == 'table' then
-			local cnt = 0
-			for i in pairs(areadata) do cnt = cnt + 1 end
-			if cnt > 0 then
-				global.ZADV.ArData[newarea.name] = global.ZADV.ArData[newarea.name] or {}
-				table.insert(global.ZADV.ArData[newarea.name], areadata)
-			end
-		else
-			global.ZADV.ArData[newarea.name] = global.ZADV.ArData[newarea.name] or {}
-			table.insert(global.ZADV.ArData[newarea.name], areadata)
+--[[-----------------------------------------------------------------------------------------------------------------------------------]]--]]--
+----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
+--[[-----------------------------------------------------------------------------------------------------------------------------------]]--]]--
+				end
+				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.force, area, center, newarea.names or {}, entities or {}, ZADV.adata[newarea.name][center.x][center.y].data or {}, ZADV.adata[newarea.name][center.x][center.y].events or {})
+			end				if not done then debug("\n[[DEBUG]]\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
+				
+			ZADV.adata[newarea.name][center.x][center.y].serdata = serpd(ZADV.adata[newarea.name][center.x][center.y].events)
+			ZADV.adata[newarea.name][center.x][center.y].events = nil
+			global.ZADV.adata = ZADV.adata
+			ReEvent()
 		end
-
-		-- update events
-		ReEvent()
 		
 		-- remove unfinished deconstruction
 		surface.cancel_deconstruct_area{area=area, force=newarea.force}
 		
 		-- force chart area
-		if ZADV.debug >= 2 or newarea.force_reveal or ZADV.force_reveal then
+		if ZADV.debug >= 2 or newarea.force_reveal then
 		for _,f in pairs(game.forces) do
 		if f.name ~= 'neutral' and f.name ~= 'enemy' then
 			if bigarea2d then f.chart(surface, bigarea2d)
@@ -671,11 +794,10 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			local message = possiblemessages[Rnd(1,#possiblemessages)]
 			pcall(game.print, message.msg, message.color)
 		end
-		if ZADV.force_reveal then game.print("New area  ".. newarea.name) end
 		
 		
 		-- erase blueprint
-		global.ZADV.blueprint.clear()
+		ZADV.blueprint.clear()
 	
 	end
 end
@@ -706,9 +828,6 @@ end
 --- new chunk generated event handler
 local function GenerateChunkArea( event )
 	
-	-- Initialized ?
-	if not ZADV_initialized then return false end
-	
 	local skipgeneration = false
 	
 	-- on chunk charted
@@ -722,6 +841,16 @@ local function GenerateChunkArea( event )
 	-- event lock
 	if global.ZADV_InProcess then return
 	else global.ZADV_InProcess = true end
+	
+	-- check new data
+	if not global.ZADV.ControlString
+	or game.entity_prototypes["ZADV_DATA_MD"].order ~= global.ZADV.ControlString
+	then 
+		game.print("[ZAdv] New or updated areas found. Start re-initialization...", Color.green)
+		debug("Old seed:\t".. global.ZADV.ControlString)
+		debug("New seed:\t".. game.entity_prototypes["ZADV_DATA_MD"].order)
+		ReInit()
+	end
 	
 	-- variables
 	local position = Area.center(event.area)
@@ -741,7 +870,7 @@ local function GenerateChunkArea( event )
 	end
 	
 	-- check if chunk already generated or in starting area - ignore if true
-	if chunk_data["generated"] or isInsideBounds(position, ZADV.Settings['zadv_starting_radiius']) then
+	if chunk_data["generated"] or isInsideBounds(position, global.ZADV.Settings['zadv_starting_radiius']) then
 		-- event unlock and exit
 		global.ZADV_InProcess = false
 		Chunk.set_data(event.surface, chunk_position, chunk_data)
@@ -816,7 +945,7 @@ end
 
 
 script.on_init(Init)
-script.on_event(defines.events.on_tick, Global_Handler)
+script.on_load(PostInit)
 script.on_event(defines.events.on_chunk_generated, GenerateChunkArea)
 --script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
 --script.on_event(defines.events.on_chunk_generated, DelayedGenerateChunkArea)
@@ -842,12 +971,6 @@ remote.add_interface("ZADV", {
 			game.print("Incorrect 3rd argument, number expected")
 		end
 		
-	end,
-
-	-- /c remote.call("ZADV", "force_reveal", true)
-	force_reveal = function(state)
-		ZADV.force_reveal = state
-		game.print("Force reveal = ".. tostring(state))
 	end,
 })
 

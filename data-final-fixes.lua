@@ -1,5 +1,8 @@
-require 'lib/bplib'
+
+local zzlib = require("lib/format/zzlib")
 local md5 = require("lib/format/md5")
+require 'lib/bplib'
+require 'util'
 
 --
 -- Prepare all known areas
@@ -15,7 +18,7 @@ if ZADV.TEST_MODE then
 	local area = {}
 	for modname,list in pairs( ZADV.Data ) do
 	for bpname,bpdata in pairs(list) do
-		if bpname == "TEST_MODE" then
+		if bpname == "TEST" then
 			area = bpdata
 			ZADV.debug = 2
 		end
@@ -43,6 +46,7 @@ for bpname,bpdata in pairs(list) do
 		
 		-- parse blueprint string into readable format
 		local _data = BPlib.CalculateAreaData(bpdata.bp)
+		if bpname == "TEST" then log(zzlib.inflate(util.decode(bpdata.bp:sub(2,#bpdata.bp)))) end
 		
 		-- check area size
 		local maxsize = 2^6
@@ -61,17 +65,29 @@ for bpname,bpdata in pairs(list) do
 				ZADV.ControlString = ZADV.ControlString .. tostring(ret)
 				return ret
 			end
+			local function _checkforce(value, _type, default)
+				local ret = ""
+				if type(value) == _type then ret = value else ret = default end
+				if ret ~= 'neutral' and ret ~= 'enemy' and ret ~= 'player' then
+					ret = "ZADV_" .. modname .."_".. ret
+				end
+				ZADV.ControlString = ZADV.ControlString .. tostring(ret)
+				return ret
+			end
 			
 			-- blueprint options
 			ZADV.Data[modname][bpname].bp 					=  bpdata.bp
 			ZADV.Data[modname][bpname].name 				=  modname ..'-'.. bpname
+			ZADV.Data[modname][bpname].bpname 				=  bpname
+			ZADV.Data[modname][bpname].modname 				=  modname
 			ZADV.Data[modname][bpname].probability 			=  math.min(1000,math.max(1, bpdata.probability or 10)) or 10
 			ZADV.Data[modname][bpname].remoteness_min 		= _checkvalue(bpdata.remoteness_min, 'number', 10)
 			ZADV.Data[modname][bpname].remoteness_max 		= _checkvalue(bpdata.remoteness_max, 'number', 0)
 			ZADV.Data[modname][bpname].only_once 			= _checkvalue(bpdata.only_once, 'boolean', false)
 			ZADV.Data[modname][bpname].max_copies 			= _checkvalue(bpdata.max_copies, 'number', 0)
 			ZADV.Data[modname][bpname].ignore_technologies	= _checkvalue(bpdata.ignore_technologies, 'boolean', true)
-			ZADV.Data[modname][bpname].force 				= _checkvalue(bpdata.force, 'string', "neutral")
+			ZADV.Data[modname][bpname].force 				= _checkforce(bpdata.force, 'string', "neutral")
+			ZADV.Data[modname][bpname].unique 				= _checkvalue(bpdata.unique, 'boolean', false)
 			ZADV.Data[modname][bpname].force_build 			= _checkvalue(bpdata.force_build, 'boolean', true)
 			ZADV.Data[modname][bpname].random_direction 	= _checkvalue(bpdata.random_direction, 'boolean', false)
 			ZADV.Data[modname][bpname].finalize_build		= _checkvalue(bpdata.finalize_build, 'boolean', true)
@@ -90,21 +106,17 @@ for bpname,bpdata in pairs(list) do
 			ZADV.Data[modname][bpname].rotatable 			= _checkvalue(bpdata.rotatable, 'boolean', true)
 			
 			-- other
-			ZADV.Data[modname][bpname].userdata 			= bpdata.userdata and bpdata.userdata or {}
-			ZADV.Data[modname][bpname].ScriptForEach 		= (bpdata.ScriptForEach and type(bpdata.ScriptForEach) == 'function') and bpdata.ScriptForEach or function() end
-			ZADV.Data[modname][bpname].ScriptForAll 		= (bpdata.ScriptForAll and type(bpdata.ScriptForAll) == 'function') and bpdata.ScriptForAll or function() end
-			ZADV.Data[modname][bpname].messages 			= (bpdata.messages and type(bpdata.messages) == 'table') and bpdata.messages or { { msg = "", color = {r=0.31, g=0.70, b=1, a=0.8} } }
+			ZADV.Data[modname][bpname].areadata 			= table.deepcopy(bpdata.areadata and bpdata.areadata or {})
+			ZADV.Data[modname][bpname].ScriptForEach 		= table.deepcopy((bpdata.ScriptForEach and type(bpdata.ScriptForEach) == 'function') and bpdata.ScriptForEach or function() end)
+			ZADV.Data[modname][bpname].ScriptForAll 		= table.deepcopy((bpdata.ScriptForAll and type(bpdata.ScriptForAll) == 'function') and bpdata.ScriptForAll or function() end)
+			ZADV.Data[modname][bpname].Events	 			= (bpdata.Events and type(bpdata.Events) == 'table') and table.deepcopy(bpdata.Events) or nil
+			ZADV.Data[modname][bpname].messages 			= table.deepcopy((bpdata.messages and type(bpdata.messages) == 'table') and bpdata.messages or { { msg = "", color = {r=0.31, g=0.70, b=1, a=0.8} } })
 			
 			ZADV.Data[modname][bpname].remoteness_min 		= ZADV.Settings['zadv_starting_radiius'] + ZADV.Data[modname][bpname].remoteness_min
 			ZADV.Data[modname][bpname].remoteness_max 		= ZADV.Data[modname][bpname].remoteness_max == 0 and 0 or ZADV.Settings['zadv_starting_radiius'] + ZADV.Data[modname][bpname].remoteness_max
 			ZADV.Data[modname][bpname].max_copies 			= ZADV.Data[modname][bpname].max_copies <= 0 and -1 or ZADV.Data[modname][bpname].max_copies
 			
-			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].update_for or " "))
-			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].userdata))
-			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].ScriptForEach))
-			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].ScriptForAll))
-			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].messages))
-			ZADV.ControlString = ZADV.ControlString .. md5.sumhexa(BPlib.serialize(ZADV.Data[modname][bpname].names_accordance))
+			ZADV.Data[modname][bpname].current_force		= ''..ZADV.Data[modname][bpname].force
 			
 			if bpdata.update_for then
 				bpdata.update_for.data = {}
@@ -115,6 +127,9 @@ for bpname,bpdata in pairs(list) do
 			end
 			
 			counter = counter+1
+			-- debug(0,'Area "%s-%s"', modname, bpname, maxsize)
+			-- debug(0,'bpdata %s', serpent.block(bpdata))
+			-- debug(0,'Data %s', serpent.block(ZADV.Data[modname][bpname]))
 			
 		else
 			table.insert(delete, 'ZADV.Data["'.. modname ..'"]["'.. bpname ..'"] = nil')
@@ -151,7 +166,7 @@ debug(0,'-------------------------------------')
 --
 -- Store Prepared Data to Control
 --
-debug(0,ZADV)
+debug(1,ZADV)
 local dump = serpent.dump(ZADV.Data)
 local chunks = math.floor(#dump / 199) + 1
 local sdump = serpent.dump(ZADV.Settings)
@@ -185,7 +200,7 @@ local nchunks = math.floor(#ndump / 199) + 1
 	-- remember ControlString
 	{
 		type = "flying-text",
-		name = "ZADV_DATA_MD",
+		name = "ZADV_DATA_CS",
 		time_to_live = 0,
 		speed = 1,
 		order = "".. ZADV.ControlString
@@ -269,5 +284,36 @@ slow_brick3.name = "zadv-slow-brick-70"
 slow_brick3.place_as_tile.result = "zadv-slow-path-70"
 data:extend({slow_brick3})
 
+data:extend({
+  {
+	type = "virtual-signal",
+	name = "signal-ex",
+    icon = "__ZAdventure__/graphics/icons/signal/signal_ex.png",
+	icon_size = 32,
+	subgroup = "virtual-signal-letter",
+	order = "c[letters]-[Z]-[ex]"
+  }
+})
+for i=0,9 do
+	data:extend({
+	  {
+		type = "virtual-signal",
+		name = "signal-y-"..i,
+		icon = "__ZAdventure__/graphics/icons/signal/signal_y_".. i ..".png",
+		icon_size = 32,
+		subgroup = "virtual-signal-letter",
+		order = "c[letters]-[9]-[0".. i .."]"
+	  },
+	  {
+		type = "virtual-signal",
+		name = "signal-r-"..i,
+		icon = "__ZAdventure__/graphics/icons/signal/signal_r_".. i ..".png",
+		icon_size = 32,
+		subgroup = "virtual-signal-letter",
+		order = "c[letters]-[9]-[1".. i .."]"
+	  }
+	})
+end
 
+data.raw.inserter['stack-inserter'].allow_custom_vectors = true
 

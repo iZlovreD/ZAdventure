@@ -1,11 +1,8 @@
-local base64 = require("format/base64")
 local zzlib = require("format/zzlib")
 local json = require("format/json")
-
+require "util"
 
 BPlib = {}
-
-BPlib.chunkMarker ="0eNqtmt1u4jAQhd/F10GK7fFPeJVVL9jitpZoQCFdbRfl3ReasOrFhsRz5goBms/n2EM8xnNRPw8f6dTltlfbi8rPx/astj8u6pxf293h9ln/eUpqq3Kf3lWl2t377V2XXnKb9pu33Z9dt99cw5671Cc1VCq3+/RbbfXwVKk+H9LIOx3Puc/H9ka8frvRvlKfX6/DEnRzSC/9lfwA4iQghEO0XWZ0+fXtMYQkIA6COInVcRJKSEIJzS/xt9SdDfzfsq6Kw6zbSXXx6GOgNqVxZhqQGah1aZyeBmQG6ro0rp4GrJFsmiCNACMKMIIAwwswnACDBBhWgGEEGBpn1NDzY2RoAYYRYFgBBgkwnADDCzCCACMKMBqE0Qg8TxtcRhSQEXEZQUBGwGV4ARkel+EEZLjZreXhPu9md5M1YZYXZnhhmhVWs6J4Y/GM8WaRt2RQnpJAnhIvT4nlmXDPVsCz5Xm2LM8W92wEPBueZ8PybHDPWuK8w/OsV1fBS/Jx8cTSjsx8wUFziVE48fjpAz971JxZX12OzunWAnPOS3ZWlmnUrxHwy3ugsZ5nBvVrBfzyNi3WnmVRvyTgl1eYEKt+Jlb5TKzqmVjFM3FqZ+KUzsSpnIlTOLNqSEJz0wnkpkNFeAERHhURBEQEVEQUEBFREY2AiGb1f+tLiIgjAo7wOMLhCMIRFkcYHKFhRI3mt0YBBgVYFEAowKEAjwICCogoADmo1Lx7z/uNTmEB8++a1bDiilUa3r31/Ra5VKVd3yEwf+yzvA6B+1W75YUBv6OSxoh524TrcBI63PpGnmUI4RBt4RlB+okKWmdGxFM1Nmhtv/VzVepX6s5fUB+DMVE3dTDD8BfNbptu"
 
 local function prepareInput(input)
 	if type(input) == 'string' and input:sub(1,1) == '0' then
@@ -16,7 +13,7 @@ local function prepareInput(input)
 end
 
 function BPlib.ParseToArray(input)
-	return json.parse(zzlib.inflate(base64.decode(prepareInput(input))))
+	return json.parse(zzlib.inflate(util.decode(prepareInput(input))))
 end
 
 
