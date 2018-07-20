@@ -184,7 +184,8 @@ function Global_Handler(event)
 		
 		for id,data in pairs(global.ZADV.Events) do
 			for dname,edata in pairs(data) do
-				if type(ZADV.Data[edata.mod][edata.area].Events[id]) == 'function'
+				if ZADV.Data[edata.mod] and ZADV.Data[edata.mod][edata.area] and ZADV.Data[edata.mod][edata.area].Events
+				and type(ZADV.Data[edata.mod][edata.area].Events[id]) == 'function'
 				and global.ZADV.ArData[dname]then
 					for indx,ardata in pairs(global.ZADV.ArData[dname]) do
 						if not ardata.disabled and ((event.name == 0 and event.tick % 10 == indx % 10) or event.name ~= 0) then
@@ -194,7 +195,10 @@ function Global_Handler(event)
 							global.ZADV.ArData[dname][indx] = nil
 							local cnt = 0
 							for i in pairs(global.ZADV.ArData[dname]) do cnt = cnt+1 end
-							if cnt == 0 then global.ZADV.ArData[dname] = nil end
+							if cnt == 0 then
+								global.ZADV.ArData[dname] = nil
+								global.ZADV.Events[id][dname] = nil
+							end
 						end
 					end
 				end

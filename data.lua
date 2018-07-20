@@ -3,7 +3,7 @@ require 'stdlib/table'
 ZADV = {}
 ZADV.Data = {}
 ZADV.Settings = {}
-ZADV.debug = 2
+ZADV.debug = 0
 
 local format = string.format
 
