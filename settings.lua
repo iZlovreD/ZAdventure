@@ -15,8 +15,8 @@ data:extend({
 		name = "zadv_starting_radiius",
         setting_type = "startup",
 		orcder = "b",
-		default_value = 12,
-		minimum_value = 5,
+		default_value = 17,
+		minimum_value = 15,
 		maximum_value = 64
 	},
 	{
@@ -28,9 +28,16 @@ data:extend({
 	},
 	{
 		type = "bool-setting",
-		name = "zadv_experemental",
+		name = "zadv_disable_in_pvp",
         setting_type = "startup",
 		orcder = "d",
+		default_value = false
+	},
+	{
+		type = "bool-setting",
+		name = "zadv_experemental",
+        setting_type = "startup",
+		orcder = "e",
 		default_value = false
 	},
 })

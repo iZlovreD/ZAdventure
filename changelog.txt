@@ -66,7 +66,18 @@ Date: 19/07/2018
     - Added support for handling events (see area template in [Z] Adventure expansion (example) for details).
   Changes:
     - Simplify some areas to lower event handling load
+    - Updated probability and remoteness for some areas.
     - Updated to work with area events.
     - Updated work data usage algorithms to lower save/load time.
     - Updated instructions for area creation in example mod (Event handling).
     - Renamed "userdata" to "areadata" in area structure.
+    - Due to changes, may be incompatible with previous saves.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.1
+Date: 22/07/2018
+  News:
+    - New setting to disable mod in PvP scenarios
+    - Additional optimization to lower save/load time and memory usage
+  Bugfixes:
+    - Fix of generation inside starting areas in pvp scenario
+    - Fix "Unique per force" restriction mechanics

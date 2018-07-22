@@ -127,9 +127,6 @@ for bpname,bpdata in pairs(list) do
 			end
 			
 			counter = counter+1
-			-- debug(0,'Area "%s-%s"', modname, bpname, maxsize)
-			-- debug(0,'bpdata %s', serpent.block(bpdata))
-			-- debug(0,'Data %s', serpent.block(ZADV.Data[modname][bpname]))
 			
 		else
 			table.insert(delete, 'ZADV.Data["'.. modname ..'"]["'.. bpname ..'"] = nil')

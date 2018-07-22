@@ -207,6 +207,7 @@ ret.area['garage'] = {
 	,remoteness_max = 40
 	,max_copies = 3
 	,force = "player"
+	,unique = true
 	,random_direction = false
 	
 	,minable = false
@@ -597,6 +598,7 @@ ret.area['maze variant_1'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -750,6 +752,7 @@ ret.area['maze variant_2'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -903,6 +906,7 @@ ret.area['maze variant_3'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -1056,6 +1060,7 @@ ret.area['maze variant_4'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -1209,6 +1214,7 @@ ret.area['maze variant_5'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -1362,6 +1368,7 @@ ret.area['maze variant_6'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -1515,6 +1522,7 @@ ret.area['maze variant_7'] = {
 		
 		for _,entity in pairs(entitylist) do if entity and entity.valid and entity.prototype.name == "iron-chest" then
 			
+			entity.force = 'neutral'
 			areadata.entity = entity
 			
 			local function Rnd(max)
@@ -1655,7 +1663,7 @@ ret.area['smart lab'] = {
 	,probability = 35
 	,remoteness_min = 5
 	,remoteness_max = 50
-	,only_once = true
+	,unique = true
 	,force = "player"
 	,random_direction = true
 	,force_reveal = true
@@ -3536,7 +3544,7 @@ ret.area['occupied base'] = {
 	,remoteness_min = 125
 	,only_once = true
 	,ignore_technologies = true
-	,force = "zadv_opposite"
+	,force = "force"
 	,random_direction = true
 	
 	,dangerous = true
