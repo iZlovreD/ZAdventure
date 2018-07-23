@@ -81,3 +81,8 @@ Date: 22/07/2018
   Bugfixes:
     - Fix of generation inside starting areas in pvp scenario
     - Fix "Unique per force" restriction mechanics
+---------------------------------------------------------------------------------------------------
+Version: 1.1.2
+Date: 23/07/2018
+  Bugfixes:
+    - Fix force related bugs

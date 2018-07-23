@@ -195,40 +195,55 @@ local function GetRandomArea(seed)
 			
 			global.ZADV.restrictedareas = global.ZADV.restrictedareas or {}
 			global.ZADV.copy_per_force = global.ZADV.copy_per_force or {}
+			ZADV.Data[mn][an].current_force = ZADV.Data[mn][an].current_force or ZADV.Data[mn][an].force or 'neutral'
+			ar.current_force = ar.current_force or ar.force or 'neutral'
 			local nf = ar.name..'-'..ar.current_force
 			
 			-- force check
 			local skip_force = false
 			
-			if ar.unique and ar.force == 'player' and global.ZADV_PVP_MODE then
-				--debug('unique check 1 %s',serpb(global.ZADV.copy_per_force[ar.name]))
-				global.ZADV.copy_per_force[ar.name] = global.ZADV.copy_per_force[ar.name] or {}
+			if ar.unique and ar.force == 'player' then
 				
 				ZADV.Data[mn][an].max_copies = 1
-				local teams = {}
-				for _,t in pairs(global.teams) do
-					if not global.ZADV.copy_per_force[ar.name][t]
-					or tonumber(global.ZADV.copy_per_force[ar.name][t]) > 0 then
-						table.insert(teams,t)
-					end
-				end
-				--debug('unique check 2 %s',serpb(teams))
+				global.ZADV.copy_per_force[ar.name] = global.ZADV.copy_per_force[ar.name] or {}
 				
-				if not tlength(teams) then
-					global.ZADV.restrictedareas[nf] = true
+				if global.ZADV_PVP_MODE then
+				
+					--debug('unique check 1 %s',serpb(global.ZADV.copy_per_force[ar.name]))
 					
-				else
-					local _force = teams[Rnd(1,#teams,seed)] or 'neutral'
+					local teams = {}
+					for _,t in pairs(global.teams) do
+						if not global.ZADV.copy_per_force[ar.name][t]
+						or tonumber(global.ZADV.copy_per_force[ar.name][t]) > 0 then
+							table.insert(teams,t)
+						end
+					end
+					--debug('unique check 2 %s',serpb(teams))
 					
-					if FindNearestPlayer(pos).force.name ~= _force then
-						skip_force = true
+					if not tlength(teams) then
+						global.ZADV.restrictedareas[nf] = true
+						
 					else
-						ZADV.Data[mn][an].current_force = _force or 'neutral'
-						nf = ar.name ..'-'.. _force
+						local _force = teams[Rnd(1,#teams,seed)] or 'neutral'
+						
+						if FindNearestPlayer(pos).force.name ~= _force then
+							skip_force = true
+						else
+							ZADV.Data[mn][an].current_force = _force or 'neutral'
+							nf = ar.name ..'-'.. _force
+						end
 					end
-				end
-				--debug('unique check 3 %s',ZADV.Data[mn][an].current_force)
+					--debug('unique check 3 %s',ZADV.Data[mn][an].current_force)
 				
+				else
+			
+					if not global.ZADV.copy_per_force[ar.name][ar.force] then
+						ZADV.Data[mn][an].max_copies = 1
+					else
+						global.ZADV.restrictedareas[nf] = true
+					end
+					
+				end
 			end
 			
 			-- check if no more copiees alloewd
