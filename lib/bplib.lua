@@ -13,9 +13,12 @@ local function prepareInput(input)
 end
 
 function BPlib.ParseToArray(input)
-	return json.parse(zzlib.inflate(util.decode(prepareInput(input))))
+	return json.parse(BPlib.ParseToJson(input))
 end
 
+function BPlib.ParseToJson(input)
+	return zzlib.inflate(util.decode(prepareInput(input)))
+end
 
 function BPlib.CalculateAreaData(input)
 	
@@ -67,11 +70,11 @@ function BPlib.CalculateAreaData(input)
 				if r.results then for _,p in pairs(r.results) do
 					if p.name == n then recipes[r.name]=true end end end
 				if r.normal or r.expensive then
-					if r.normal.result and r.normal.result == n then recipes[r.name]=true end
-					if r.expensive.result and r.expensive.result == n then recipes[r.name]=true end
-					if r.normal.results then for _,p in pairs(r.normal.results) do
+					if r.normal and r.normal.result and r.normal.result == n then recipes[r.name]=true end
+					if r.expensive and r.expensive.result and r.expensive.result == n then recipes[r.name]=true end
+					if r.normal and r.normal.results then for _,p in pairs(r.normal.results) do
 						if p.name == n then recipes[r.name]=true end end end
-					if r.expensive.results then for _,p in pairs(r.expensive.results) do
+					if r.expensive and r.expensive.results then for _,p in pairs(r.expensive.results) do
 						if p.name == n then recipes[r.name]=true end end end
 				end
 			end
@@ -86,13 +89,10 @@ function BPlib.CalculateAreaData(input)
 
 		end end
 		
+		-- save needed technology names to array
 		for n in pairs(_techs) do
-		
 			ret.techs = ret.techs or {}
-			
-			-- save needed technology names to array
 			table.insert(ret.techs, n)
-			
 		end
 		
 		area.right_bottom.x = area.right_bottom.x < 0 and area.right_bottom.x or math.max(1,area.right_bottom.x)

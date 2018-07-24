@@ -195,9 +195,11 @@ local function GetRandomArea(seed)
 			
 			global.ZADV.restrictedareas = global.ZADV.restrictedareas or {}
 			global.ZADV.copy_per_force = global.ZADV.copy_per_force or {}
-			ZADV.Data[mn][an].current_force = ZADV.Data[mn][an].current_force or ZADV.Data[mn][an].force or 'neutral'
-			ar.current_force = ar.current_force or ar.force or 'neutral'
-			local nf = ar.name..'-'..ar.current_force
+			if not ar.current_force or ar.current_force == nil then 
+				ZADV.Data[mn][an].current_force = ZADV.Data[mn][an].force or 'neutral'
+				ar.current_force = ar.force or 'neutral'
+			end
+			local nf = ar.name..'-'.. (ar.current_force or ar.force)
 			
 			-- force check
 			local skip_force = false
@@ -685,14 +687,13 @@ local function detectScenarios()
 end
 
 --- Global initialization
-local function Init()
+local function PrepareData()
 	
 	--parse raw data
 	local dump, sdump, ndump = "", "", ""
 	local chunks = game.entity_prototypes["ZADV_DATA_C"].order
 	local schunks = game.entity_prototypes["ZADV_SDATA_C"].order
 	local nchunks = game.entity_prototypes["ZADV_NDATA_C"].order
-	global.ZADV.ControlString = game.entity_prototypes["ZADV_DATA_CS"].order
 	ZADV.debug = tonumber(game.entity_prototypes["ZADV_DATA_D"].order)
 	debug("Set debug level: ".. ZADV.debug)
 	
@@ -721,25 +722,26 @@ local function Init()
 	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
 	
 end
-local function PostInit()
+local function Init()
 	
 	if not ZADV.Data or not ZADV.Settings or not ZADV.NamePairList then
-		Init()
 		ZADV_initialized = false
 	end
 	
 	-- info about new data
 	if not global.ZADV.ControlString
 	or game.entity_prototypes["ZADV_DATA_CS"].order ~= global.ZADV.ControlString
-	then 
-		game.print("[ZAdv] New or updated areas found. Start re-initialization...", Color.green)
-		debug("Old seed:\t".. global.ZADV.ControlString)
-		debug("New seed:\t".. game.entity_prototypes["ZADV_DATA_MD"].order)
-		Init()
+	then
+		game.print("[ZAdv] New or updated data found. Start re-initialization...", Color.green)
+		debug("Old seed:\t".. (global.ZADV.ControlString or 'nil'))
+		debug("New seed:\t".. game.entity_prototypes["ZADV_DATA_CS"].order)
+		global.ZADV.ControlString = game.entity_prototypes["ZADV_DATA_CS"].order
 		ZADV_initialized = false
 	end
 	
 	if not ZADV_initialized then
+	
+		PrepareData()
 		
 		-- creating blueprint instance
 		PrepareBlueprint()
@@ -789,7 +791,7 @@ function Global_Handler(event)
 		log(string.format('\n\n[[debug_pulse]]\n%s\n%s\n%s',serpb(_G),serpb(global),serpb(ZADV)))
 	end
 	
-	PostInit()
+	Init()
 	detectScenarios()
 	UnlockChunkEvent(event.tick)
 	
@@ -842,7 +844,7 @@ local function GenerateChunkArea( event )
 	-- variables
 	local position = Area.center(event.area)
 	local chunk_position = Chunk.from_position(position)
-	local chunk_data = Chunk.get_data(event.surface, chunk_position)
+	local skip_chunk = Chunk.get_data(event.surface, chunk_position)
 	
 	-- check if chunk already charted
 	if game.forces['neutral'].is_chunk_charted(event.surface, chunk_position) then
@@ -852,15 +854,15 @@ local function GenerateChunkArea( event )
 	
 	-- check collisions and if true - ignore chunk
 	if CollisionCheckArea(event.surface, event.area) then 
-		chunk_data = true
+		skip_chunk = true
 		--ZADV_ForcedArea = true
 	end
 	
 	-- check if chunk already generated or in starting area - ignore if true
-	if chunk_data or isInsideBounds(position, ZADV.Settings['zadv_starting_radiius']) then
+	if skip_chunk or isInsideBounds(position, ZADV.Settings['zadv_starting_radiius']) then
 		-- event unlock and exit
 		global.ZADV_InProcess = false
-		Chunk.set_data(event.surface, chunk_position, chunk_data)
+		Chunk.set_data(event.surface, chunk_position, true)
 		return
 	end
 	
@@ -922,7 +924,6 @@ local function GenerateChunkArea( event )
 end
 
 
-script.on_init(Init)
 script.on_event(defines.events.on_tick, Global_Handler)
 script.on_event(defines.events.on_chunk_generated, GenerateChunkArea)
 --script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
