@@ -9,8 +9,33 @@ local delete = {}
 local replace_data = {}
 local counter = 0
 local replaced = 0
+local total = ' %s Areas in total.%s'
 
 ZADV.ControlString = ""
+
+skiparea = {}
+for modname,list in pairs( ZADV.Data ) do
+for bpname,bpdata in pairs(list) do
+	
+	if bpdata.update_for then
+	
+		local mod,aname = bpdata.update_for.modname, bpdata.update_for.areaname
+		for k,v in pairs(bpdata) do if k ~= 'update_for' then
+			if ZADV.Data[mod] and ZADV.Data[mod][aname] then
+				ZADV.Data[mod][aname][k] = v
+				debug(0,'Update for "%s-%s" %s',mod,aname,k)
+				debug(2,'\n%s\nto\n%s',serpent.block(ZADV.Data[mod][aname][k]),serpent.block(v))
+			end
+		end end
+		
+		ZADV.Data[modname][bpname] = nil
+		skiparea[modname..bpname] = true
+		replaced = replaced+1
+		total = ' %s Areas in total, %s has been updated.'
+		
+	end
+
+end end
 
 if ZADV.TEST_MODE then
 	local area = {}
@@ -29,7 +54,8 @@ end
 
 for modname,list in pairs( ZADV.Data ) do
 for bpname,bpdata in pairs(list) do
-			
+if not skiparea[modname..bpname] then
+	
 	-- check for empty area
 	if bpdata.bp and type(bpdata.bp) == "string" and bpdata.bp:len() > 0
 	and ((settings.startup["zadv_experemental"].value and bpdata.experemental) or not bpdata.experemental)
@@ -116,13 +142,11 @@ for bpname,bpdata in pairs(list) do
 			
 			ZADV.Data[modname][bpname].current_force		= ''..ZADV.Data[modname][bpname].force
 			
-			if bpdata.update_for then
-				bpdata.update_for.data = {}
-				bpdata.update_for.data._mod = modname
-				bpdata.update_for.data._area = bpname
-				bpdata.update_for.data = ZADV.Data[modname][bpname]
-				table.insert(replace_data, bpdata.update_for)
-			end
+			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].areadata)
+			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].ScriptForEach)
+			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].ScriptForAll)
+			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].Events)
+			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].messages)
 			
 			counter = counter+1
 			
@@ -130,6 +154,8 @@ for bpname,bpdata in pairs(list) do
 			table.insert(delete, 'ZADV.Data["'.. modname ..'"]["'.. bpname ..'"] = nil')
 			debug(1,'Area "%s-%s" bigger than %s tiles in one of dimension, skiping..', modname, bpname, maxsize)
 		end
+		
+	end
 	
 end end end
 
@@ -137,21 +163,6 @@ end end end
 ZADV.ControlString = md5.sumhexa(ZADV.ControlString:gsub("[_- ]",''))
 for _,com in pairs(delete) do local _=loadstring(com); _() end
 
-local total = ' %s Areas in total.%s'
-
-for _,rep in pairs(replace_data) do
-	if  ( rep.mod and type(rep.mod) == 'string' and rep.mod ~= "" )
-	and ( rep.area and type(rep.area) == 'string' and rep.area ~= "" )
-	and ZADV.Data[rep.mod][rep.area] then
-		
-		ZADV.Data[rep.mod][rep.area] = nil
-		ZADV.Data[rep.mod][rep.area] = rep.data
-		ZADV.Data[rep._mod][rep._area] = nil
-		
-		replaced = replaced+1
-		total = ' %s Areas in total, %s is replaced.'
-	end
-end
 
 debug(0,'-------------------------------------')
 debug(0, total, counter, replaced>0 and replaced or "")

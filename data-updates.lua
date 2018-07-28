@@ -67,3 +67,14 @@ end
 
 data.raw.inserter['stack-inserter'].allow_custom_vectors = true
 
+
+local spawner = table.deepcopy(data.raw['unit-spawner']['biter-spawner'])
+spawner.name = "zadv-biter-spawner"
+spawner.flags = {}
+data:extend({spawner})
+
+spawner = table.deepcopy(data.raw['unit-spawner']['spitter-spawner'])
+spawner.name = "zadv-spitter-spawner"
+spawner.flags = {}
+data:extend({spawner})
+

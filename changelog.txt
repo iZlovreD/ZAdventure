@@ -97,3 +97,19 @@ Version: 1.1.4
 Date: 24/07/2018
   News:
     - Added suport for Alien Biomes mod
+---------------------------------------------------------------------------------------------------
+Version: 1.1.5
+Date: 28/07/2018
+  News:
+    - New area "Exchange post".
+    - Added suport for 5dim mods
+    - Added suport for Bob mods
+    - Added suport for Angel's mods
+    - Added suport for pY mods
+  Changes:
+    - New rule for update existed area prototypes. Now you can describe only updated data.
+    - Mazes get additional "smartass" protection.
+    - Maximum allowed global frequency cap raised to 500 (50%).
+    - Small update for area probability generator logic.
+  Bugfixes:
+    - Additional check for nil values.

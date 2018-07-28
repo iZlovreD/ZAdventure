@@ -1,4 +1,3 @@
-require 'stdlib/table'
 
 ZADV = {}
 ZADV.Data = {}
@@ -30,24 +29,16 @@ ZADV.Settings['zadv_starting_radiius'] = settings.startup["zadv_starting_radiius
 ZADV.Settings['zadv_disable_in_pvp'] = settings.startup["zadv_disable_in_pvp"].value
 
 
-local data = require 'areas' or {}
-debug(2, "Requesting [%s] areas", data.ModName)
-
-
-ZADV.Data[data.ModName] = ZADV.Data[data.ModName] or {}
-for name,area in pairs(data.area) do if area.bp:len() > 0 then
-
-	ZADV.Data[data.ModName][name] = area
-	
+local areas = require 'areas' or {}
+debug(2, "Requesting [%s] areas", areas.ModName)
+ZADV.Data[areas.ModName] = ZADV.Data[areas.ModName] or {}
+for name,area in pairs(areas.area) do if area.bp:len() > 0 then
+	ZADV.Data[areas.ModName][name] = area
 end end
 
-
-if data.replacements then
-	ZADV.Data.Replacements = ZADV.Data.Replacements or {}
-	for ori,new in pairs(data.replacements) do
-
-		ZADV.Data.Replacements[ori] = ZADV.Data.Replacements[ori] or {}
-		table.insert(ZADV.Data.Replacements[ori], new)
-		
-	end
+areas = require 'areas-updates' or {}
+ZADV.Data[areas.ModName] = ZADV.Data[areas.ModName] or {}
+for name,area in pairs(areas.area) do
+	ZADV.Data[areas.ModName][name] = area
 end
+
