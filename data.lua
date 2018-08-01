@@ -2,11 +2,11 @@
 ZADV = {}
 ZADV.Data = {}
 ZADV.Settings = {}
-ZADV.debug = 0
+ZADV.debug = 2
 
 local format = string.format
 
-function debug ( level, msg, ... )
+local function debug ( level, msg, ... )
 
 	if ZADV.debug >= tonumber(level) then
 	

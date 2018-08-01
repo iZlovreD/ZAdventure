@@ -70,7 +70,7 @@ ret.area['armored rail junction'] = {
 end
 
 if settings.startup["zadv_area_yellow"].value then
-ret.area['lone yellow belt'] = {
+ret.area['yellow belt'] = {
 	
 	bp="0eNqVlN1ugzAMhd/F10Qi0JaOV5mmKYBXLOUHJem2quLdl0JHqzV0cBkSPtvHxz5DJY/YWdIeyjNQbbSD8vUMjg5ayMs3f+oQSiCPChLQQl1OzkhhWSc0SugTIN3gN5S8f0sAtSdPOGKGw+ldH1WFNjyIAhLojAv/GH2JFzhpAicoWd73yQMiW4bInyDyCUHWaFa36PwjgT1DbCbEh3CekXZofbiYpWRBpYYs1uPdJsLcTkzhHKpKkj4wJeqWNLJsFp0GcuDS0CVvhXadsZ5VKD1EouymKAobOiqGMiRlqWadkRiJwscCeEyG4qbkvAJ8SvNOgCxC2080aULprQiuap5om/5m9i/55WYajyjnWp5eM40QeLqg1GiluxiNr+x1pNWDdw8YRuCrxWEMH8MsHJark6JO5/mamY0jNsttsqCZfLumm1Hf8t2aLRIvqlhsCP7XEGFLDuu0vNu+CXyideODfZFle/6SFlnf/wCjbd0a"
 	
@@ -113,7 +113,7 @@ ret.area['lone yellow belt'] = {
 	end
 	
 }
-
+--[[
 ret.area['yellow belts'] = {
 	
 	bp="0eNqdmu1u6zYMhu/Fv2PAkqyv3MpQHLiJ0BpznMB2z1YUvfe5TbsGG628r34VSepHJEWKlMm36nF4SZepH5dq/1b1h/M4V/s/3qq5fxq74eO75fWSqn3VL+lU7aqxO318ms9DN9WXbkxD9b6r+vGY/q726n1398luntPpcejHp/rUHZ77MdXqBqHfH3ZVGpd+6dNVks8Pr7/Gl9NjmtY1RBl21eU8r8+cx4+FV06t9K56Xf+G9w+h/gPRICRmGAZkuAyjBRkmw7AYo8kgHIbISeExRM4YAUPk9iRiiKxvqOZfyDJ143w5T0v9mIZFcrL2CnKrAx/7KR2uP7YSVhFYI2KdhNUEVuNYQ2AVjm0JbINjLY6NONXh1IBTPU71uHcFnOpwWSNOtTBVEwHW4lQivvDw0po7UayYbQx/orT391y3PNYC2J9g6sc5Tcv65fZZggBdPvlvw80KX9H9RdBRWshDkje45Dcp6dQNQ52G9d+n/lBfzkPKHIWyG0TWDrHIDKahT0NRXqPo88/ejyij6fMPoRpk6x2886Zl98qV7ZUlPczmNowONFMmNBRnBjd2IOVuBLH76TzWT2k9ov96Tp+3kv+vEzlj54K5bUiZTZnMrSLXcYXr/ITlKR37l9M944SccQwpdCwUuiAD6vv+2FoeawCs42oJLZr25qK1dIc/61ym+5JNiaCfoPu09OE5zRkFG5ERmVJB3TeR/Ymq4by6zHM3HtMxq6P5Eu8+++bNwbI61LbGeltjy4bJd0kg0wytbgOr2yJ7E/GtsaD5YkZfR2RpRCbP2s/D5gugui6jbixK7iLL0ZHRoqo6RaRzYFecBk1nMuoi9VyDi9TSgZaRDYyEJoNwJZWIjGJjIHO6uQBYnXCEiBkq4we+ASTCDwyvSGNlItKDbp45ILzh3MBnUKyHhwwLeQOAZw7vMENlEofnqx5EsEDXeWJN5pkySCzGQlP4ioStmIMqewdBr6Px6kO2CHGhlwGFN3haU1t26abXcXiWlg3i4ZQqP192SyffLYRYdK8mV4kNnOhEW0QFpyX5eV10q2e1LLuGs6u0cLaQbWGpa7F4AkdHn+RG5Hia04qcQOkkvkSJkZbFyf1MvqFpZRDfwkSaTA3fwoSwfAsTwvItTAhry1oNGzvl2BYAJKNnGwIQNbANAYga2YYoQmVmAyxOVWxDFKLqorcPskMx8wB45DPjAHjgM9MAeNwT0wB41Cu8JtvYF+TGrnOAop6IzCIa+7jdib4+7iIaTznfCRGA4jFiJKg410E0+fG405ZUH4LiAWJxm3oSKpdAOsD1+oZr4+kEzyY3jXqm5yZLSHTr8SxKNOvxhA/16mNOVTwm8OLGWG6wVJ4dNI6aLN2AeGq0dAMSqNnSDUhkhktlxk2nHJgu3WAoZrx0g6GZ+dINhqHudSvkYXedf97fDFrvqt9pmq+uGLzWQcXGr/fafwC4fA53"
@@ -155,13 +155,13 @@ ret.area['yellow belts'] = {
 		end
 	end
 	
-}
+}--]]--
 end
 
 if settings.startup["zadv_area_red"].value then
 ret.area['red belts'] = {
 	
-	bp="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"
+	bp="0eNqdleFugyAQgF9lud+SCLXa+irLsqC9tSSIBui2pvHdd62Za1N02H+C+t3xcQdnqPQRO6uMh/IMqm6Ng/L1DE7tjdSXOX/qEEpQHhtIwMjmMvqQzjNvpXFdaz2rUHvoE1Bmh99Q8v4tATReeYUD7jo4vZtjU6GlD0aQsq1h9QGdJ3jXOvqlNZewhEkTOEHJ8r5PHghiJLhWS8s6aVA/Ilg2MLIQYzUyGtypY8NQY+2tqlnXagzAxAwsG2HSOWwqrcyeNbI+KINsNbm4FVmzWKtu2upDqPWfPePQepqbwq8Jv1MUYHiVBWh5nMk5kcVCkXMeN3Me+fQO81uR16raI63m64C0mkCcbYTE3w0X9xbzAI6nC/N+Mm3OI/IOpy1COBGvIY2wsJqzIKbK9E7C//XPs/gG4P83AF9HK00jjOaLTiYR6gFePHcyhWGbJQ0eRmyfavAgS6Rx6Qz7R0cEXSXXu6e8uaoS0JKqg+Ze6PkTrRtKclMIseHbtKDQP+H6RWM="
 	
 	,probability = 50
 	,remoteness_min = 15
@@ -183,23 +183,59 @@ ret.area['red belts'] = {
 	
 		if entity.prototype.name == "assembling-machine-1" then
 			entity.set_recipe(areadata["iron-gear-wheel"])
+			areadata.tosuply = areadata.tosuply or {}
+			table.insert(areadata.tosuply, entity)
 			
 		elseif entity.prototype.name == "assembling-machine-2" then
 			entity.get_inventory(defines.inventory.assembling_machine_modules).insert( {name="effectivity-module-3", count=2} )
 				entity.set_recipe(areadata["transport-belt"])
+			areadata.tosuply = areadata.tosuply or {}
+			table.insert(areadata.tosuply, entity)
 			
 		elseif entity.prototype.name == "assembling-machine-3" then
 			entity.get_inventory(defines.inventory.assembling_machine_modules).insert( {name="effectivity-module-3", count=3} )
 				entity.set_recipe(areadata["fast-transport-belt"])
-			
-		elseif entity.prototype.name == "steel-chest" then
-			entity.get_inventory(defines.inventory.chest).insert( {name="iron-plate", count=5000} )
-			
+		
 		elseif entity.prototype.name == "iron-chest" then
 			entity.operable = true
 			
 		end
 	end
+	
+	,Events = {
+		
+		[defines.events.on_tick] = function(event, ad, game)
+			
+			if not ad.total then
+				ad.total = 0
+			elseif ad.total >= 7500 then
+				ad.disabled = true
+				
+			else
+				
+				if ad.nextcheck then
+					if ad.nextcheck <= event.tick then
+					
+						for _,e in pairs(ad.tosuply) do
+							if e and e.valid then
+								
+								local inv = e.get_inventory(defines.inventory.furnace_source)
+								if inv and inv.valid and inv.can_insert("iron-plate") then
+									ad.total = ad.total + inv.insert("iron-plate")
+								end
+								
+							end
+						end
+						
+						ad.nextcheck = event.tick + 600
+						
+					end
+				else ad.nextcheck = event.tick + 600 end
+				
+			end
+			
+		end
+	}
 	
 }
 end
@@ -256,6 +292,7 @@ ret.area['blue belts'] = {
 		elseif entity.prototype.name == "assembling-machine-3" then
 			entity.get_inventory(defines.inventory.assembling_machine_modules).insert( {name="effectivity-module-3", count=4} )
 			entity.set_recipe(areadata["express-transport-belt"])
+			entity.rotatable = true
 			entity.direction = 4
 			
 		elseif entity.prototype.name == "iron-chest" then
@@ -3670,7 +3707,7 @@ end
 if settings.startup["zadv_area_base"].value and settings.startup["zadv_dangerous"].value then
 ret.area['occupied base'] = {
 	
-	bp="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"
+	bp="0eNq1nd1yXDeuhV/llK6tFMF/5lVOpaYUu+Oojix5ZPlkMim/+8ixut0ZEWx8YOXKictYDe4NYJEbBPDH1c93nw8fH2/vn65+/OPq9u3D/aerH//3j6tPt+/vb+6+/t3T7x8PVz9e3T4dPly9ubq/+fD1/x4ffn74+PD4dPXlzdXt/bvDv65+lC9vLor9cvf859Ovjw+/HR6vnz4/Ph7OEeKXn95cHe6fbp9uD9+0+PN/fv/H/ecPPx8en3/iBHT7+HB//fbXw6enZ/CPD5+eRR7uv/7sM8x17G+ufv/zzy9fdfovkGgDkbgCSSaQ8ALRZhDZBCGyUqOYMGJbYdQTxm8PD+8Oi8d6VKXOYJoRJoYVSj+hfHp6uD9c/3ZzdzdTJb+ApBnIMIKkF5A8A5FgRIkrVUSMKLLUJRpRwlKXZEORsdQlG1H6UpdiRGlLXaoRpS51aSaUryovQGyWe9Jkvh6b5Z4eylSTaDPc0/uZahJtdnsylbkmNrM9We1cE5vVnhxoronNaE++PNfEZrOnsDLXxB5uj6YiU5wGI+UcpcNQGacoA4bKqS4pwFA51SXRgDvXhQbcOQoNuPMVZYgy16XAsD1HqTBsz1fUYNie62K03VPcnutitF1Z+lE22q4sPSCLNTYsX3U2Gm9dPZdstN2y1MRounmpSbE+lWWQykbTTcsFmXe5S1Vslru2FZvdLh9JsVnt0vKLLd4ufbBE41NdxqZis1hZBv5is1hZvt9ii7WyNLVis1dZ+k6BW9u5JnBrO9cEbm2nmlS4tZ1qUoWBzDWJbH88B0lsfzxfTmYgc00K22TPQSrbZM+X09gme65Jt4bppeHXwfbYMqYfRgLcY4cpirA9tqJLhLvjuS6JoSi6fDfc95/vj18DZ/vaH8oR54fy5c3Vu9vHw9tv/6LOcOFOV9Guwv3y/Ek1uF+eo3SGoqxosF33HKUHuOuerqgLQ1F0iWzvrqBYT2lL/+yZoSi6FHaOUFCstrv08t4YiqKL1XbDEmWwg8R0QSOgE8Bck2GNw0tNjLuHJUYihwhlMRkdIuZ62Ex2LPUw7nXDUpGGQBRNOjpEKCCDHSLCPP8QEMpcFQmCziIaSmSHEWVFCaFoumR0ptFQCjsZKSv6brh3D+9vPz3dvv221bx+PPzz8/Ofz/9KPSg9a/bm6uXf/eOX27vnf/wt63lMqJ6wP94eHt/e3r+/fnz4fP/u0/WHm/c3/769Pzxjv33+m6evH7i//DRVsLGzm7LM715xe//p8DhfVjtb1oU9mgR4HJzrdZajW20hpbMdpBizdjGstWPpD8VQheU/NBSYAFFWxDIgmi4VHqvaHKaxc5X0OUyHBytFmwHPRHNtYmCJB0WbKBBG0SY6wtspEfGs298e386yg3pk+q5R/6vz5ykkTHBrr4AeQ5VXcOYsH54Rrg93z9o/Pr+Ijw93h9UhUFGrwf24ohbd1ivaDLSbVpQ5yxzOLhi9hgsnPpirZUwirl3ZmEMca00SAlE0ObPoh7ubx+uPN/eH1carzmHYlklTBhr0abekPCC2wdGU6mg7oqEM9GVZWVFmH7kVXTK7wKHpwj5za7qw79waSmYbIWVFBW2ENF0q2wgputAdzNwvM93BlDkM3cHMtSl0BzPXptAdjKJNZJcnNG3gTQ5NG7q1UGCKLZ5//5SrrKpacdIah+4plGXRPYWizTjbV348LHYTc/mzJOMF+fkyqlySl/Xvxwvy6+WfJRXn4mv3PUsnrsWVX2dfAxWQikCUhTTjpufCgjpjY0UZuDOY62LMJF6IZY193FBWZMwkxvXTNWYS49rjWobMNb98a00cnp6Mcpu4Qq5QYBqEURbVrTH+uG2Pc5xhxYlLnLP84YfDu9vPHy4faNdvzZxKDGsY40Zh/bStucS+RjHac1sakDWX2Na61L/wwfXTw/X7P7/SLHhNQbIZdF0vqiMQRRNbNF4/GGM2cf2mjdnEtdGdZxNNTDf3zPOEoukrwfwNGXOKcuHBFIai6FIZYSoojRGmsqLOCFPRhR7S5hf2Az2kzasHgkCOUmDoIU1ZlNGAry9oA6OvogyMvoouFYU7RRUWeBVNjPuIvkYZkP1PJ885nsBvZfMHJOxGqKYL/FamoMBvZcqKsrFS9mh+YQ5ToGMqMPAunQYDL9NpMB3eg1NgBrzCNoexJvyOrDvmKAJvwinKRLjJV7SBgXheph1hHFaWxOKwsiAWhhVNUBhWFGFRWHmwg+0X56oYy/VOAXz+UBK7nqSowm4naaoklt5SUDLLRykoheWjFJTKeE1BaajJgIbSjW0XXpRpcxRYrTdHyTDmzt3oLMMGv2QoWkUUqRSQhECUlWVUQKhoUlABoQJS0b1fBaShSwYKiHXXsASxmW9YYRjza0s9jMm1tMSIpHhQwUikeFDByIRW5wZvLNhb2vtZMs14tFm/5oaIUVlXRyCKJsPWqGYZlyos7i9zFLjNVVBg2Uido8CyEUWXzAo+FJTCSjUUlMq+pCsoDX1IVx5uRyCKJgN9jJ9rcpZzu3n79vOHz3c3Tw+zO4bteKcs/zBXx1rB15bqsNp+BSQhEGU5lxLFR2ZXxAtidmUhIDlxCgkXr3/H1mDHAWWJHe07lCUO+xLjdIlx2vcl4LROvXx3Nv41Gfd48/4Z+eb+/9QtzrzPTkflUfPnZszEpSVGNtrBkm6Mebiltxgr+spyNej7g4LRbdGwXgqGLAU3V4Zl4BQMIRjztQx00VfBSKh4TQHJqHhNASmo7EwBqWjjqbwbtgVWNOnoe7oCAhtc5Xl/K7gHTnMUeDFS0QWm3BRdEtqmKSAZgSjrKWivp2hS0Q5NAWloc6UspyMQRROwdSgrbQTf2ckrvc7Sbf9VVfSyZ9A3Wgpg5IBxCXjpDuVaOsPHtV4c2j4oGGj7oBgB2j4oenTC+grGIIw9X0tEO4e5HpEljRUQljNWVsNSxoomrLpC0cTcqu1UaDrHqbD94hylwbKw47sKliLhZC6B60slL95WP9VAz1tMXrytfqrtnsuLVV5pcRnBQfKYOjM83cS2FsriMtoVKCBmo16/KPCtok6fU5zCNkzy8fJBPv21IG5xkH+h+jBf83AzvdIKNbzuQL8o7wzz02fK1s8UaWX62dq2cOlAxozd0raMCbulmZ/l65TCj7JcRjWKK7/eLokvo9hZds4U6o8x9VWkn/pYhs0q5v13WfGGAmLtEHtq4DaHiZCnlZbCCdG0AsJq4hSQYmRRRbwaSXAe5koziiu/jpIdCgbKdSi9nQMjuvnDqPx0t7Kxat9f5BVMMsOUl8Vd3qPUjAhA0ayA+K9AVBD+FQj7NkLy7AFNA+dZGm9JCopOwyY9t8MWbIwy/21jsm4ZVRo63CkYiQV8BSWj75fzE6K5PO6bJkrnd3ayUzRhpXGKJijqKooMgjHXw9pQs68wBCapk7Ix7ugOmqIMyi4rGOgG2vzlnOXd0FdLRaOLW4S0km7W45SsVtQxta58sQ8nUyuDFILrs6cCJpD2k+FQa0zUlcUrGOTGmrI0cmFNgSgsDau5uzFNt/J2Y5JuFb2MKbq+ei2ovn4+lCGgA1qaY6DaekUPVFmv6ME6dOc5SEb35MocpCAQRZOK7topIA1dtVNAOrppp4AMdNFuDmKdTzcWL8c6nW6s9Ihk/6LogW6tKxhoy6CspRAMRQ/zgK+y0qSR63GKJuj+mYJhzyGHBUwkl9YVCPuO4Oh7F0/wOUY0z2f+riK5aqYsLpsXl2aLi1PQSx/FViE3kpSxsqgGIBQtSLsHRQty02wOkUi6WIEg98zmzwL1k1Qg0C0zBQNdMlMw0B0zBQNdMVMw0A0z5c2iC2aKHoOU2M0xzlJjlgK7OgdhBRbzucaZ1VcomiRWitznKNlZo6coVVBhs/J40C0zBaMRDGUx6I6ZgjFIkd8cw9owcmUtBU3lUDAiqfBTMBIo8FMgMtgqKRAFbEgUiAqq+xQIQv8KBKH/uacYE2MrIz+vXbtcdD9Xo4qvOlDRiHV8msdGYwGbrMzEWL72gqE8mkLqCxU9Kup3MuYgLK2ggLBbYQrIQJ1O5iDWuXMveTAFhA3qUkDYhkABSQhkbvMtIwKf9zLIDfUUUZaDdgHKasiVXEUNEmEVLQYJj8oj7aibyFyRjnqJzJ9HR61EFAzUSETBQG1EFAzURETBQC1EFIyGPkbPG2Nl6yC542Ujxc4GivGKLtZJcrIMI+e1Z5bWrPNeX/ksq2U94+SlWvDkpT0j1L5JA0GRVlsQ6d6kKUJCraZHR7s2TZOB2nTOUUpAjfPmCyoBlUBomrBbMoomqARC04TdkhFlpjq7JjPv81kCuyej6cJ2tJounaEousAG0vM2qsWa9no5PylLYokvDQRlvjQQlPpSnq2wWKtoUmCqRwx3Loqg4KssDwVfZXWk9EzDIKVnCoYxE7Y0vOj8mKDBWb8mLB3T2vTxuJlRUFD3aMVeImoerT0V1Dta0wS1jtY06WhM0HzUQomshl15P4nVsCu6JFbDrunCatg1XdhoH02XDPfyijKFsZuiDGvkpOnSbHNwNPFuFFfWMJwz/cTQp6bkYJvRoyiXxTSiR5OOphE7mrRtvo/yVoyVYkuPyWTGj7aKiu7XK4o0FOcVTdCAH02TgchirgmrEFM0KegGogaCriBqy0GzfTRNMpoVPB8QVEphDNrmKJUxqKIL/Bqm6AK/him6DIYy16XCr2FzXSqbJaHpElk1oYKSfEN3taVllM7RlCoon6OhwL2BsiI28U/TBV1Q1EAGyJcrGA0dyhQMMspHeazniTIwG1dDS4hjFZCMQJRnUxxzxI8uWv/2KeLlLBmnTxFfhwxjLm4dA43ZuHUINBalrWO6MR93JKn5cowJubj0b2NG7kjdiiaJbSP6HCWzbcSYoxS2jVB0qWwboaDAzYiyou9m+/7z/aK/zjie0bqlw045S9bpbnmi8n75SnQxJ+76ar1DHOHsxO79749nI7INh7LMxDYccxOz5gGPKIouBd1D0VAqQ1FW1NBNFA2lo5ombUWDoUx1qdbOlBKXKIJqo+YrqubOlLLUJbENqoKSydVUbUFG012/oYq2yoomjWyVFQzjdfflYga4n6roIWjLPtfDOvctLBWJCETRJJGiCg0kk6oKbTmoNEPTBNVmaCCNXMXSltMRiKLJIBe6FBBrCdyKBqu16WRdahLRkU4BYYdLZTnZtHH8ul0E+8ZqzP/FpUsa839xGRys+b+lXxvzf3Hp18b0X1y6ZDJ3iIov7QvCHEfQcUxDieg4FmWOktBxTNOFjaDXdIEtdhRd2N0hDQU22VFWxO4OaboMdGxTUMxj39pqReYSuaUHmGvkylIXdide0yWjM4SmS0FnCE0Xc/X80mAyasKuraiT4jZNk0GOEIomJbCBNBqMkJOIsqDCSuY1VRI4RmiaZHCM0PQooM5N04OUymt6WEcOLSOcdd7bkj6MSUFZWokxJyhLszemBGXpgMaMoCxDQUW7XU0TdLdN0wTdbdM0QXfbNBB0t01bDqqe1zQZZJetgBhzgHEZ1oxJwLj0nWaOsEvDbyznEeMcheU8YpqjsJyHpgvLeWi6NLY9VnSBG1tFF7ixnevS4cZ2rkuHG1tFl4hitgKSUMxW1oMy15omLNwqmrBwq2jCwq2iSUeRUtFkoEg518SYiTuGlbkmQ8zfI15WVOY45ogbljDJWIX+Yi1tjpKNjVxkiWKrqn9ZT51j2KrqXz5ta4qg8fFfQX56c/V0e3f4lhVVeOaZKb6ccH+9+ffN47vrtw/3bx8PT4frx9v3vz5dfVVGlZYt6bAjLWNLum9I/3mXRhG+O/yylm0bsn1DdvhlVy/qoqx4ZI9jjZLrLcUt245bth23bDtu2Xbcsu2jdNuQ9nlG3PCMuOEZccMz4oZnxG3PWJm2LitbXiVbXiVbXiVbXiVbXiVbXiVbXnWUrhvSUvy24vNn2fBn2fBn2fBn2fBn2fBn2fDnsOXPYcufw5Y/hy1/Dlv+HLb8OWz5c9jy56N02ZCW7Lc0XyQJG5EkbESSsBFJwkYkCRuRJGxEkuCPJKdpaa5IcpKOW9KyJR12pH2R5CTdt6TblnTdki5b0nlL+szWvn26+njz9OtaJHIR4SKBi/h9bsduB1WUL40/P/6SJPkfn4vOvpf++mXrhmzbkO0bssMv66Kz73ea/LIuOutbdNa36Kxv0VnforO+RWf9NZ1dcuD+msOsIpWLFC6SuUjiIpGLCBcJXMTvPDsGOKiifGn8+fGXxC2Bmxu3ae44Pr7pG3zTN/imb/BN3+CbvsE3bYsx2hZjtC3GaFuM0ThjNM4YjTNG44zROGM0zhiNM0bjjNE4Y5yGrvvNX/yyO8a74zaDPiD+SPl748bBLZCbOfcl7rA+pmobTNU2mKptMFXbYKq6xRd1iy/qFl9UzheV80Xlwb/y4F958K88+Fce/CsP/i8ifClxw343bH/Hdne8Br+4QQX4W+Omwe2PGzn3JO6uhF/qBr/UDX6pG/xSN/ilbEX5shXlC4/yhUf5wqN84VG+8ChfeJQvPMoXHuVfRPjq+eIda6cSeOH4F/Ai8HMaeA181XjZ3HC5d3AX5H5O6KG8ogejRPcHZx8p5K3QnHlozjw0Z/7BJvNonnk0zzyaZx7NM4/mmUfzF5GBJfi756+ev3n+4vl756/d8dapBH7l+BfwIvBzwq8Cv21sUNhmsVtgz+PezUMIj1M8GPKIy8M65w5OUD7yzhvkPSlduqRq4oydOGMnztiJM3bijJ04YyfO2IkzduKMnTBjJ8zYCTN2woydMGMnzNgJM3bCjJ0wYyfK2IkydqKMnShjJ8rYiTJ2ooydKGMnytiJMnbCjJ0wYyfM2AkzdsKMnTBjJ8zYCTP2RgGsRM66kbNu5KwbOetGzrqRs27krBs560bOupGzbsSsGzHrRsy6EbNuxKwbMetGzLoRs27ErBsp60bKupGybqSsGynrRsq6kbJupKwbKetGyroRs27ErBsx60bMuhGzbsQcGjGHvi6VvyQhnDmFM6dw5hTOnMKZUzhzCmdO4cwpnDmFM6dg5hTMnIKZUzBzCmZOwcwpmDkFM6dg5hTKnEKZUyhzCmVOocwplDmFMqdQ5hTKnEKZUzBzCmZOwcwpmDkFM6fg86pgrhXMtYK5NnCuDZxrA+fawLk2cK4NnGsD59rAuTZwrg2cawPm2oC5NmCuDZhrA+bagLk2YK4NmGsD5tpAuTZQrg2UawPl2kC5NlCuDZRrA+XaQLk2UK4NmGsD5tqAuTZgrg2YawPm2oC5NmCuDZRrB+Ya3rOCt6zgHSt4w4pBaWZQlhmUZAblmEEpZlCGGZRgxit+eTz8cnt/+J6eWL4/l1hwSfl+ixoxfXL01dB3T42LWi91D+p/2MNxEMFxCoRC3ouBt2LgnRh4Iwbeh6HTcNtpuO003HYabjsNt52G207Dbafb+e4LtN0VaDvc13cYYjsMsR2G2A5DbIchtsMQ22GIpT1IcAsS3IEENyDB/Ud48wLeu4C3LuCdC3jjgkZDbKMhttEQ22iIbTTENhpiGw2xzbejbb5A21yBtrl2tA2G2wbDbYPhtsFw22C4bTDcNhhuaSMN3EcDt9HAXTRwEw3eLoB3C+DNAnivAN4qoNJwW2m4rTTcVhpuKw23lYZb3E+h+sJt9YXb6gq31RVuaeOECsNtheG2wnBbYbitMNxWGG5pXwncVgJ3lcBNJXBPCV63z8v2edU+L9rnNfuFhttCw22h4ba8CremOFBeBV0iln1iyScWfWLiEgsuKd9v+Rbme4q+V+azjwqtl1o7dSfqrzgi4KCD4xoInbx2n5fu88p9XrjP6/Z52T6u2sdF+69r9k2OlH1hPfvCevaF9ewL69kX1rMvrGdXWM+usJ5dYT27wnp2hfXsCuuviv6BVIOuQl2L+i6ODjgA4RiHwyiI1LyUnFeS80JyXkfOy8h5FTkvIsc15LiEPPn4I/n4I/n4I/n4I/n4I/n4I/n4I7n4I7n4I7n4I7n4I7n4I7n4I7n4g9ah0zJ0WoWOi9BxDTouQccV6MnHH4AMDHNr9aFpl6doXZTlmmYskbBExBKCJQKVGFSgUwFKW9FHW9FHW9FHW9FHW9FHW9FHW9FFW9FFW9FFW9FFW9FFW9FFW9FFW7SQm9Zx0zJuXMWNi7hxDTcu4cYV3PHiSLnFaNaLI+UWLT0v9wPVO6Ncnl95UbZtyNYNWVCDwCvLeGEZryvjZWW8qgwXleGaMlxS5uNb8fGt+PhWfHwrPr4VH9+Ki2/Fxbfi4ltx8a24+FZcfIsrv2kxGq1Fo6VouBINF6LhOjRchoar0DaYVraZ1jmu+WL7MlV2Z9j9zqj7nUH3O2Puce04rhzHdeO4ahzXjOOKcVovTqvFaa14cPF6cNF6cLF6cJF6cHF6cFF68DB68BB68PB58NB58LB58JA5rCyHdeWwqhzWlNOKclpPTqvJaS05rSQP7vnrwT19PbgnQAV371HZ4FDZ4FB8SMZnZHxExidkfEDG52N6PKanY3F9kvadkH0HZN/52Hc89p2OfYdj19nYdTR2nYxdB2PXudh1LBbPV2h4NIYnY3gwpudieiymp2J6KKZnYnHzqbj5FDevxvlSnC7F2VKcLMW5UpwqpZlSmij15Ul9aVJfltSXJPXlSH0pUl+G1JUgdeVHXelRV3bUlRx15UZdqVGYGYWJUZgXpWlRmhWlSVGaE6Up0Qgv8uBroPgWKL4Eiu+A4iug+AYovQBK73/6rn/6bn/6Ln/67n76rn76bn76Ln667n26rn26bn26Ln267ny6rny6bnzCC5/wvie87klve9LLnvSuJ73qSW964iIwXAOGS8BwBRguAKP1X7T8y1f95Sv+8tV++Uq/fJVfvsIvX92Xq+zLVfXlKvpy1Xy5Sr5cFV9wyius9IKFXrDOi5Z50SovWuRFa7xwewXcXQE3V8C9FXBrBdpZgTZWKK5A7Guu4Out4Gut4Ous4Gus4Our4Gqr4OqqUFhvm8Ja2xTW2aawxjawcQLsmwDbJsCuCbRpAu2ZQFsm0I4JuH0Y7h6Gm4fh3mG4dRjtHEYbh9G+YbRtGO0aRpuG0Z5hvpZhvo5hroZhrn5hsF0Y7BYGm4XBXmGwVRjsFAYbhcE+YbRNGO0SRpuE0R5huAEu7n+L29/i7re4+S3tfUtb39LOt7TxLe17S9ve0q63vqa3vp63rpa3ro63sOEt7HcL293Cbrew2S3sdQtb3cJOt7TRLe1zS9vc0i63eGwDntqAhzbgmQ14ZAOd2EAHNtB5DXRcA53WQIc10FkN3RVSffMaXOMauiekwpENcGIDHNgA5zXAcQ1wWgMc1gBnNdBRDXRSAx3UQOc0DDrjc9AJn4PO9xz0Gt+g1zTwtDU8bA3PWsOj1vCkNTpojc5Zo2PW6JQ1OmSNzlijI9YGHPkz4PzOwaZ3DjbjB05Rg0PU4Aw1OEINTlCDA9Tg/DQ4Po1OT6PD0+jstOHiCxo5aWimsZ+Si529+BBsPgObj8DmE7D5AGw+/5qPv+bTr/nwaz77Go++xpOv8eBrPPcaj73GU6/x0Gs88xqPvKYTr+nAazrvmo67ptOu6bBrOuuajrqmk67poGs85xqPucZTrvGQazzjGo+4xhOu8YBrPN9aBLOoYBYVzKK8KJlXJfOyZF6XzAuTeWUyLk3Gtcm0c5cI5UShnCiUE4VyolBOFMqJAjlRICcK5ESBnCiQEwVyIuy4JbSsmNYV08JiXFmMS4txbTEuLsbVxUI5USgnCuVEoZwY/X0yT7L81xqWqFiiYImMJRKWiFhCsESgEoMK4DeOXzh+3/h147eNXzZ/11CAvmiKTxdAnxB9BfQdUyOiVkrdgPoZ9mQcLHA8wiEPR1UcuDE3YPoBDHesjA0OPk0bXJwwFyfMxXiEkeDadcHF64Kr1wWXrwuuXxdcwC60gl1oCbskysWJcnGiXJwoFyfKxYlycaJcnCAXJ8jFCXJxglycIBcnyMUJcjGsPhdYfi6w/lxoAbrQCnShJehCa9CFFqELHTd0FKCvGdOPq2mz5A1azhu0nDEtZ0zLGdMynkwruCmB4K4EgtsSCO5LILgxgWTKUJkyVKYMlSlDZchQGTJUhgyVIUPBwnOhledCS8+F1p4LLT4XOmD0KECjAA40OwHY1a1fjlXS4gjAZSPwl43AX/wzhE6y9jdTMAUUTAG4HYLgfgiCGyII7ogguCWCFBrRX5f1Y2MXv6zf1P0ORl/YgP8evy1sENjmsFljz8HujCOGL5aX7Vi+Cse67LG0OzrMtG5wSN3gkLrBIXWDQyrmkIo5pGIOwR0eBLd4ENzjQXCTB8FdHqRuUELdoITqpoTqpgRYYy+0yF5olb3QMnuhdfZHAWrY2Hewe+II4OOEusEJdZsToss3jnXtyWHjbYOL2gYXtQ0uahtc1Da4qGEuapiLGuYi3BpDcG8Mwc0xBHfHENweQ9oGnzQ3n8A2AUL7BAhtFCC0U4DQVgFHAWpi2Iqxo2Bf9LFC22CFtsEKbZsVomun1jcYpW8wSt9glL7BKH2DUfoGo3T/lO2TbN2QLRuyeUPWHnlwDxHBTUQEdxGRvsE83c08sJuC0HYKQvspCG2oIK87KtAHt7K7i7JlQ7ZuyLYN2b4hO/yyPsLqG4TVNwhrbBDW2CCssUFYY4OwxgZhjQ3CGhuENTYIa2wQ1tiIG2MjboyNuDE24sbYiBtjI26MjbgxNuLG8MeNGPxx4yQbN2RlQzb4ZT1xIwZ/3IjBHzdi8MeNGPz+G4Pff2Pw+28Mfv89yg6/rMt/j7KyIevyX9nwX9nwX9nwX9nwX9nwX9nwX9nwX9nwI9nwI9nwI9nwI9nwI9nwI9nwo7jhC3HDF+KGL2yUfMa44Qtxwxfihj3HDXuOG/YcN+w5Wu35pzdXt0+HD8//4Oe7z4ePj7f3T1dvru5ufj7cPf/d/zz/9/8fHj/9iVx7i7HLCC1++fIfTfm1Sg=="
 	
 	,probability = 200
 	,remoteness_min = 125
@@ -3728,7 +3765,7 @@ ret.area['occupied base'] = {
 		game.forces[force].friendly_fire = false
 		
 		game.forces[force].worker_robots_battery_modifier = 100
-		game.forces[force].worker_robots_speed_modifier = 7
+		game.forces[force].worker_robots_speed_modifier = 10
 		game.forces[force].worker_robots_storage_bonus = 5
 		
 	end
@@ -3737,10 +3774,10 @@ ret.area['occupied base'] = {
 	
 		[defines.events.on_tick] = function(event, ad, game)
 			
-			if ad.timeforexpansion then
-				game.forces[force].ai_controllable = true
+			if ad.timeforexpansion and ad.timeforexpansion <= event.tick then
+				game.forces[ad.force].ai_controllable = true
 				ad.disabled = true
-			else ad.timeforexpansion = game.tick + (60^3) end
+			else ad.timeforexpansion = event.tick + (60^3) end
 			
 		end
 		
@@ -4010,7 +4047,6 @@ ret.area['inventive station'] = {
 					if not ad.const_right.entity or not ad.const_right.entity.valid then
 						ad.const_right.entity = ad.surface.find_entities_filtered{name='constant-combinator', position=ad.const_right.position, limit=1}
 						if not ad.const_right.entity or not ad.const_right.entity.valid then
-							debug("IntegrityCheck const_right not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4018,7 +4054,6 @@ ret.area['inventive station'] = {
 					if not ad.const_left.entity or not ad.const_left.entity.valid then
 						ad.const_left.entity = ad.surface.find_entities_filtered{name='constant-combinator', position=ad.const_left.position, limit=1}
 						if not ad.const_left.entity or not ad.const_left.entity.valid then
-							debug("IntegrityCheck const_left not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4029,7 +4064,6 @@ ret.area['inventive station'] = {
 					if not ad.chest_buffer.entity or not ad.chest_buffer.entity.valid then
 						ad.chest_buffer.entity = ad.surface.find_entities_filtered{name='steel-chest', position=ad.chest_buffer.position, limit=1}
 						if not ad.chest_buffer.entity or not ad.chest_buffer.entity.valid then
-							debug("IntegrityCheck chest_buffer not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4037,7 +4071,6 @@ ret.area['inventive station'] = {
 					if not ad.chest_in.entity or not ad.chest_in.entity.valid then
 						ad.chest_in.entity = ad.surface.find_entities_filtered{name='iron-chest', position=ad.chest_in.position, limit=1}
 						if not ad.chest_in.entity or not ad.chest_in.entity.valid then
-							debug("IntegrityCheck chest_in not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4045,7 +4078,6 @@ ret.area['inventive station'] = {
 					if not ad.chest_out.entity or not ad.chest_out.entity.valid then
 						ad.chest_out.entity = ad.surface.find_entities_filtered{name='iron-chest', position=ad.chest_out.position, limit=1}
 						if not ad.chest_out.entity or not ad.chest_out.entity.valid then
-							debug("IntegrityCheck chest_out not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4053,7 +4085,6 @@ ret.area['inventive station'] = {
 					if not ad.inserter.entity or not ad.inserter.entity.valid then
 						ad.inserter.entity = ad.surface.find_entities_filtered{name='stack-inserter', position=ad.inserter.position, limit=1}
 						if not ad.inserter.entity or not ad.inserter.entity.valid then
-							debug("IntegrityCheck inserter not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4064,7 +4095,6 @@ ret.area['inventive station'] = {
 					if not ad.decider.entity or not ad.decider.entity.valid then
 						ad.decider.entity = ad.surface.find_entities_filtered{name='decider-combinator', position=ad.decider.position, limit=1}
 						if not ad.decider.entity or not ad.decider.entity.valid then
-							debug("IntegrityCheck decider not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4074,7 +4104,6 @@ ret.area['inventive station'] = {
 				if not ad.lab.entity or not ad.lab.entity.valid then
 					ad.lab.entity = ad.surface.find_entities_filtered{name='lab', position=ad.lab.position, limit=1}
 					if not ad.lab.entity or not ad.lab.entity.valid then
-						debug("IntegrityCheck lab not valid BlowItUp")
 						BlowItUp()
 						return false
 					end
@@ -4168,7 +4197,6 @@ ret.area['inventive station'] = {
 						if ad.tag and ad.tag.valid then ad.tag.destroy() end
 						ad.done = true
 						SetConCom('red','red')
-						debug("ChangeBehaviour NONE")
 						
 					elseif type(recipe) == 'string' then
 						ad.decider.conditions.first_signal = {}
@@ -4320,8 +4348,6 @@ ret.area['inventive station'] = {
 								end
 							end
 							
-							debug("CheckItems %s  %s", total_amount, serpent.block(buffer))
-							
 							if total_amount and total_amount > 0 then
 								
 								local name = false
@@ -4393,7 +4419,6 @@ ret.area['inventive station'] = {
 						ad.nextchange = event.tick +36000 -- 36000 = 10min 
 						ad.nextcheck = event.tick +300
 						ad.skip = false
-						debug("Change recipe")
 						ChangeRecipe()
 					
 					end
@@ -4404,7 +4429,6 @@ ret.area['inventive station'] = {
 				
 					if ad.nextcheck < event.tick then
 						ad.nextcheck = event.tick +300
-						debug("Check items")
 						CheckItems()
 					end
 					
@@ -4447,6 +4471,7 @@ ret.area['inventive station'] = {
 				else ad.nexttick = event.tick end
 		
 			end
+			
 		end
 		
 	}
@@ -4463,7 +4488,7 @@ ret.area['exchange post'] = {
 
 	bp = "0eNqV1cFuhCAQBuBXaebMJsK6ir5K02y0JQ0JolG2XWN494L20KQjYU6KkY+fAMMGvXmoadbWQbuBfh/tAu3rBov+tJ2J39w6KWhBOzUAA9sNsbW40arLd2cMeAbafqgntNy/MVDWaafVoeyN9W4fQ6/m8APWn8E0LqHLaONogblUDNbw4IX37J8h8gyRMq5ZRpIos4jkTG55M5GHITGiyiJSQp0XgheHUWGGzDKSRJMZ43dNSsyIA+TkSBqcFARdVy4oOXDiSoqBT6WkxMCJG2l3oCvLK8ruwImaclLQbc4l4aTgQkMpXie1q6AUrxODE4rXCSEIxSsSoazv5b/9c1swMF2vwg0BL+H9S83L3rOStRCSN0UtvP8B6UITpg=="
 	
-	,probability = 150
+	,probability = 50
 	,remoteness_min = 10
 	,max_copies = 10
 	,ignore_technologies = true
@@ -4577,7 +4602,6 @@ ret.area['exchange post'] = {
 					if not ad.const_right.entity or not ad.const_right.entity.valid then
 						ad.const_right.entity = ad.surface.find_entities_filtered{name='constant-combinator', position=ad.const_right.position, limit=1}
 						if not ad.const_right.entity or not ad.const_right.entity.valid then
-							debug("IntegrityCheck const_right not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4585,7 +4609,6 @@ ret.area['exchange post'] = {
 					if not ad.const_left.entity or not ad.const_left.entity.valid then
 						ad.const_left.entity = ad.surface.find_entities_filtered{name='constant-combinator', position=ad.const_left.position, limit=1}
 						if not ad.const_left.entity or not ad.const_left.entity.valid then
-							debug("IntegrityCheck const_left not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4596,7 +4619,6 @@ ret.area['exchange post'] = {
 					if not ad.chest_in.entity or not ad.chest_in.entity.valid then
 						ad.chest_in.entity = ad.surface.find_entities_filtered{name='iron-chest', position=ad.chest_in.position, limit=1}
 						if not ad.chest_in.entity or not ad.chest_in.entity.valid then
-							debug("IntegrityCheck chest_in not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4604,7 +4626,6 @@ ret.area['exchange post'] = {
 					if not ad.chest_out.entity or not ad.chest_out.entity.valid then
 						ad.chest_out.entity = ad.surface.find_entities_filtered{name='iron-chest', position=ad.chest_out.position, limit=1}
 						if not ad.chest_out.entity or not ad.chest_out.entity.valid then
-							debug("IntegrityCheck chest_out not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4615,7 +4636,6 @@ ret.area['exchange post'] = {
 					if not ad.decider.entity or not ad.decider.entity.valid then
 						ad.decider.entity = ad.surface.find_entities_filtered{name='decider-combinator', position=ad.decider.position, limit=1}
 						if not ad.decider.entity or not ad.decider.entity.valid then
-							debug("IntegrityCheck decider not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4623,7 +4643,6 @@ ret.area['exchange post'] = {
 					if not ad.lamp_left.entity or not ad.lamp_left.entity.valid then
 						ad.lamp_left.entity = ad.surface.find_entities_filtered{name='small-lamp', position=ad.lamp_left.position, limit=1}
 						if not ad.lamp_left.entity or not ad.lamp_left.entity.valid then
-							debug("IntegrityCheck lamp_left not valid BlowItUp")
 							BlowItUp()
 							return false
 						end
@@ -4631,7 +4650,6 @@ ret.area['exchange post'] = {
 					if not ad.lamp_right.entity or not ad.lamp_right.entity.valid then
 						ad.lamp_right.entity = ad.surface.find_entities_filtered{name='small-lamp', position=ad.lamp_right.position, limit=1}
 						if not ad.lamp_right.entity or not ad.lamp_right.entity.valid then
-							debug("IntegrityCheck lamp_right not valid BlowItUp")
 							BlowItUp()
 							return false
 						end

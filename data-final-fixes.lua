@@ -2,6 +2,23 @@ local md5 = require("lib/format/md5")
 require 'lib/bplib'
 require 'util'
 
+local function debug ( level, msg, ... )
+
+	if ZADV.debug >= tonumber(level) then
+	
+		if type(msg) == 'table' then
+			log("\n[[ZADV]] ".. serpent.block(msg))
+		
+		else
+			if type(msg) ~= 'string' then
+				msg = tostring(msg)
+			end
+			log("[[ZADV]] ".. string.format(msg,...))
+		end
+		
+	end
+end
+
 --
 -- Prepare all known areas
 --
@@ -22,9 +39,9 @@ for bpname,bpdata in pairs(list) do
 		local mod,aname = bpdata.update_for.modname, bpdata.update_for.areaname
 		for k,v in pairs(bpdata) do if k ~= 'update_for' then
 			if ZADV.Data[mod] and ZADV.Data[mod][aname] then
-				ZADV.Data[mod][aname][k] = v
 				debug(0,'Update for "%s-%s" %s',mod,aname,k)
-				debug(2,'\n%s\nto\n%s',serpent.block(ZADV.Data[mod][aname][k]),serpent.block(v))
+				debug(2,'\n%s\n------------------[TO]------------------\n%s',serpent.block(ZADV.Data[mod][aname][k]),serpent.block(v))
+				ZADV.Data[mod][aname][k] = v
 			end
 		end end
 		

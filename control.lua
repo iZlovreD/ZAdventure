@@ -37,7 +37,7 @@ Color = {
 --
 ZADV.debug = 0
 
-function debug ( msg, ... )
+local function debug ( msg, ... )
 	if type(msg) == 'table' then
 		if ZADV.debug >= 1 then log("\n[[ZADV]] ".. serpent.block(msg)) end
 	else

@@ -106,6 +106,7 @@ Date: 28/07/2018
     - Added suport for Bob mods
     - Added suport for Angel's mods
     - Added suport for pY mods
+    - Added settings to enable/disable areas directly
   Changes:
     - New rule for update existed area prototypes. Now you can describe only updated data.
     - Mazes get additional "smartass" protection.
@@ -113,3 +114,20 @@ Date: 28/07/2018
     - Small update for area probability generator logic.
   Bugfixes:
     - Additional check for nil values.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.6
+Date: 28/07/2018
+  Changes:
+    - Blue belt area - assembler machine 3 now rotatable.
+  Bugfixes:
+    - Re upload mod to fix downloading from mod portal.
+---------------------------------------------------------------------------------------------------
+Version: 1.1.7
+Date: 01/08/2018
+  News:
+    - Added suport for Omni mods
+  Changes:
+    - Red belt area - simplify.
+    - Rebalance production speed for bel areas.
+  Bugfixes:
+    - Fix for Occupied base behaviour.
