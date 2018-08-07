@@ -471,8 +471,7 @@ racedata.variants.o_transition.picture = "__ZAdventure__/graphics/terrain/asphal
 racedata.variants.o_transition.scale = 0.5
 racedata.variants.o_transition.hr_version = nil
 racedata.variants.material_background.picture = "__ZAdventure__/graphics/terrain/asphalt.png"
-racedata.variants.material_background.scale = 0.5
-racedata.variants.material_background.hr_version = nil
+racedata.variants.material_background.hr_version.picture = "__ZAdventure__/graphics/terrain/hr-asphalt.png"
 data:extend({racedata})
 
 racedata = table.deepcopy(data.raw.item['stone-brick'])
