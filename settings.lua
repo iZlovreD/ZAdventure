@@ -12,7 +12,7 @@ data:extend({
 	},
 	{
 		type = "int-setting",
-		name = "zadv_starting_radiius",
+		name = "zadv_starting_radius",
         setting_type = "startup",
 		orcder = "z-0-b",
 		default_value = 17,
@@ -59,6 +59,7 @@ for _,a in pairs({
 	,"technology"
 	,"station"
 	,"post"
+	,"race"
 }) do
 	data:extend({
 		{

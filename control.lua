@@ -90,7 +90,7 @@ end
 -- @return true if the position inside area, false otherwise
 local function isInsideBounds( position, distance )
 	for _,sp in pairs(ZADV.StartingAreas) do
-		if Area.inside(Area.expand(sp.area, math.max(0,((distance or 15)-15)*32)), position) then
+		if Area.inside(Area.expand(sp.area, math.max(0,((distance or 14)-14)*32)), position) then
 		return true end
 	end
 	return false
@@ -100,12 +100,13 @@ end
 -- @param surface : LuaSurface instance
 -- @param area : BoundingBox {left_top :: Position, right_bottom :: Position}
 -- @return true if area have collision tles, false otherwise
-local function CollisionCheckArea(surface, area)
-	local types = {"unit", "unit-spawner", "corpse", "simple-entity", "container", "resource", "cliff"}
-	for t in pairs(global.ZADV.UsedTypes) do table.insert(types, t) end
-	if surface.count_tiles_filtered{area=area,  collision_mask="water-tile"} > 0
-	or surface.count_entities_filtered{area=area, type=types} > 0
-	then return true else return false end
+local function AreaHasCollisions(surface, area)
+	if not area then return false end
+	local types = {"unit", "unit-spawner", "corpse", "resource"} -- , "simple-entity", "cliff"
+	for t,_ in pairs(global.ZADV.UsedTypes) do table.insert(types, t) end
+	local water = surface.count_tiles_filtered{area=area, collision_mask="water-tile"}
+	if water > 0 or surface.count_entities_filtered{area=area, type=types} > 0 then
+	return true else return false end
 end
 
 --- Split string to array
@@ -129,7 +130,8 @@ local function Rnd(min,max,adseed)
 	adseed = adseed or 0
 	global.adseed = global.adseed or 2^16
 	global.adseed = global.adseed + adseed
-	global.adseed = global.adseed > 2^31 and 1 or global.adseed
+	global.adseed = global.adseed < 0 and 0 - global.adseed or global.adseed
+	global.adseed = global.adseed > 4294967295 and 1 or global.adseed
 	local seed = game.tick + floor(tonumber(tostring({}):sub(8,-4))) + adseed
 	global.generator = global.generator or game.create_random_generator(seed)
 	global.generator.re_seed(seed)
@@ -147,14 +149,6 @@ local function tlength(T)
 	local count = 0
 	for k,v in pairs(T) do if v then count = count + 1 end end
 	return count
-end
-
---- Generate random number
--- @param name : requested name
--- @return string with possible replacement name
--- [ not implemented yet ]
-local function getname(name)
-	return name
 end
 
 --- Calculates the chunk coordinates for the tile position given
@@ -192,10 +186,9 @@ end
 --- Randomize and prepare new area
 -- @param seed : center of new chunk
 -- @return table area data
-local function GetRandomArea(seed)
+local function GetRandomArea(pos, surface)
 	
-	local pos = seed
-	seed = pos.x + pos.y
+	local seed = pos.x + pos.y
 	
 	-- randomize global step
 	local roll = Rnd(1,1000,seed)
@@ -217,10 +210,14 @@ local function GetRandomArea(seed)
 			end
 			local nf = tostring(mn) ..'-'.. tostring(an) ..'-'.. (ar.current_force or ar.force)
 			
+			if ar.only_freeplay and global.ZADV_PVP_MODE then
+				global.ZADV.restrictedareas[nf] = true
+			end
+			
 			-- force check
 			local skip_force = false
 			
-			if ar.unique and ar.force == 'player' then
+			if not global.ZADV.restrictedareas[nf] and ar.unique and ar.force == 'player' then
 				
 				ZADV.Data[mn][an].max_copies = 1
 				global.ZADV.copy_per_force[ar.name] = global.ZADV.copy_per_force[ar.name] or {}
@@ -266,11 +263,11 @@ local function GetRandomArea(seed)
 			
 			-- check if no more copiees allowed
 			if not global.ZADV.restrictedareas[nf] and not skip_force
-			and (roll <= ar.probability) then
+			and (roll <= ar.probability + (ZADV.debug*200)) then
 				
 				-- technology check
 				local techallow = false
-				if ar.ignore_technologies then
+				if ar.ignore_technologies or ZADV.debug == 2 then
 					techallow = true
 				elseif ar.techs then
 					techallow = true
@@ -279,7 +276,7 @@ local function GetRandomArea(seed)
 					if not f.technologies[t].researched then
 						techallow = false
 					end end	end
-					--if not techallow then debug('Not enough technologies for "%s - %s", skip this time..',mn,an) end
+					if not techallow then debug('Not enough technologies for "%s - %s", skip this time..',mn,an) end
 				end
 				
 				-- placeing check
@@ -313,6 +310,33 @@ local function GetRandomArea(seed)
 	local n,f = ZADV.Data[a][b].name,ZADV.Data[a][b].current_force
 	local nf = n..'-'..f
 	
+	-- check area size
+	if ZADV.Data[a][b].area.size.x > 32 or ZADV.Data[a][b].area.size.y > 32 then
+		
+		global.ZADV_NextForceUnlock = game.tick + 300
+		global.ZADV_ForceUnlock = true
+	
+	end
+	
+	-- calculate new area box
+	ZADV.Data[a][b].workarea = {
+		{pos.x-(ZADV.Data[a][b].area.size.x/2), pos.y-(ZADV.Data[a][b].area.size.y/2)},
+		{pos.x+(ZADV.Data[a][b].area.size.x/2), pos.y+(ZADV.Data[a][b].area.size.y/2)}
+	}
+		
+	-- re-check collisions
+	ZADV.Data[a][b].lastcollisioncheck = AreaHasCollisions(surface, ZADV.Data[a][b].workarea)
+	if ZADV.Data[a][b].lastcollisioncheck then
+		return false
+	end
+		
+	-- mark chunks
+	for x,y in Area.spiral_iterate(ZADV.Data[a][b].workarea) do
+		cpos = ChunkFromPosition({x,y})
+		global.ZADV.Chunks[cpos.x] = {}
+		global.ZADV.Chunks[cpos.x][cpos.y] = true
+	end
+	
 	-- decrease copies counter
 	local copy_left = ZADV.Data[a][b].max_copies
 	if copy_left and copy_left > 0 then
@@ -345,6 +369,11 @@ local function GetRandomArea(seed)
 	if ZADV.Data[a][b].only_once or copy_left then
 		global.ZADV.copy_per_force[n] = global.ZADV.copy_per_force[n] or {}
 		global.ZADV.restrictedareas[nf] = ZADV.Data[a][b].only_once or global.ZADV.copy_per_force[n][f] == 0
+	end
+	
+	-- increace remotness
+	if ZADV.Data[a][b].progressive_remoteness > 0 then
+		ZADV.Data[a][b].remoteness_min = ZADV.Data[a][b].remoteness_min + ZADV.Data[a][b].progressive_remoteness
 	end
 	
 	-- return area
@@ -393,9 +422,23 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			newarea.direction = 0
 		end
 		
+		local function _cf(i) return i<0 and math.ceil(i) or math.floor(i) end
+		local area = {
+			{ _cf(center.x)-(newarea.area.size.x/2), _cf(center.y)-(newarea.area.size.y/2) },
+			{ _cf(center.x)+(newarea.area.size.x/2), _cf(center.y)+(newarea.area.size.y/2) }
+		}
+		local _center = Area.center(area)
+		
+		--debug('a:%s  s:%s',base(area[1][1])-base(area[2][1]),newarea.area.size.x)
+		
+		-- remove rocks and cliffs
+		for _,r in pairs(surface.find_entities_filtered{area=area, type={"simple-entity", "cliff"}}) do
+			if r and r.valid then r.die('neutral') end
+			if r and r.valid then r.destroy() end
+		end
+		
 		
 		--[[ place blueprint on surface ]]--
-		--debug("place bp @ %s", serpent.block(center))
 		local ghosts = global.ZADV.blueprint.build_blueprint{
 			surface=surface,
 			force=game.forces[newarea.current_force],	-- modded
@@ -407,21 +450,9 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		--[[ finalize placed entities ]]--
 		
-		local area = {
-			{center.x-(newarea.area.size.x/2)-1, center.y-(newarea.area.size.y/2)-1},
-			{center.x+(newarea.area.size.x/2)+1, center.y+(newarea.area.size.y/2)+1}
-		}
-		local _center = Area.center(area)
-		
-		local area2d = newarea.chunkarea
+		local area2d = newarea.workarea
 		area2d.right_bottom.x = area2d.right_bottom.x - 1
 		area2d.right_bottom.y = area2d.right_bottom.y - 1
-		
-		local bigarea2d = newarea.bigchunkarea or false
-		if bigarea2d then
-			bigarea2d.right_bottom.x = bigarea2d.right_bottom.x - 1
-			bigarea2d.right_bottom.y = bigarea2d.right_bottom.y - 1
-		end
 		
 		-- prepare areadata
 		global.ZADV.ArData = global.ZADV.ArData or {}
@@ -492,7 +523,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					if type(newarea.ScriptForEach) == 'function' then
 					
 						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstor, areadata)
-						if not done then debug("\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
+						if not done then debug("\n[%s].ScriptForEach return with error::\n--\t%s\n", newarea.name, err) end
 						
 						if ZADV.debug >= 2 and newarea.name:find('TEST') then
 							local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, entity, namelist, locstore, areadata)
@@ -500,12 +531,14 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
 --[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 		
+		
+		
 --[[-------------------------------------------------------------------------------------------------------------------------------]]--]]--
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
 							end))()
 							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstor, areadata)
-							if not done then debug("\n[[DEBUG]]\n[%s].ScriptForEach return with error:\n%s", newarea.name, err) end
+							if not done then debug("\n[[DEBUG]]\n[%s].ScriptForEach return with error::\n--\t%s\n", newarea.name, err) end
 						end
 						
 					end
@@ -521,7 +554,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		if type(newarea.ScriptForAll) == 'function' then
 		
 			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata)
-			if not done then debug("\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
+			if not done then debug("\n[%s].ScriptForAll return with error::\n--\t%s\n", newarea.name, err) end
 			
 			if ZADV.debug >= 2 and newarea.name:find('TEST') then
 				local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
@@ -529,12 +562,14 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
 --[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 		
+		
+		
 --[[-------------------------------------------------------------------------------------------------------------------------------]]--]]--
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
 				end))()
 				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata)
-				if not done then debug("\n[[DEBUG]]\n[%s].ScriptForAll return with error:\n%s", newarea.name, err) end
+				if not done then debug("\n[[DEBUG]]\n[%s].ScriptForAll return with error::\n--\t%s\n", newarea.name, err) end
 			end
 		end
 		
@@ -546,6 +581,8 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
 --[[-----------------------------------------------------------------------------------------------------------------------------------]]--
 		
+		
+		
 --[[-------------------------------------------------------------------------------------------------------------------------------]]--]]--
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
@@ -554,9 +591,9 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		if ZADV.Data[newarea.modname][newarea.bpname].Events and type(ZADV.Data[newarea.modname][newarea.bpname].Events) == 'table' then
 			for evnt,func in pairs(ZADV.Data[newarea.modname][newarea.bpname].Events) do
-				if type(func) == 'function' then
+				if evnt and type(func) == 'function' then
 					global.ZADV.Events[evnt] = global.ZADV.Events[evnt] or {}
-					global.ZADV.Events[evnt][newarea.name] = {mod = newarea.modname, area = newarea.bpname}
+					global.ZADV.Events[evnt][newarea.name] = {mod = newarea.modname, area = newarea.bpname, evnt = evnt}
 				end
 			end
 		end
@@ -584,8 +621,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		if ZADV.debug >= 2 or newarea.force_reveal or ZADV.force_reveal then
 		for _,f in pairs(game.forces) do
 		if f.name ~= 'neutral' and f.name ~= 'enemy' then
-			if bigarea2d then f.chart(surface, bigarea2d)
-			else f.chart(surface, area2d) end
+			f.chart(surface, area2d)
 		end end end
 		
 		-- shoot the message
@@ -614,6 +650,71 @@ local function AplyBlueprintManualy(surface, center, newarea)
 end
 
 
+--- Reassign events after loadstring
+function ReEvent()
+
+	global.ZADV.Events = global.ZADV.Events or {}
+	
+	for event,data in pairs(global.ZADV.Events) do
+		if not script.get_event_handler(event) then
+			script.on_event(event, Global_Handler)
+		end
+	end
+	
+end
+
+
+--- new chunk generated event handler
+local function Generateworkarea( event )
+	
+	-- not initialized or disabled or wrong surface?
+	if not ZADV_initialized or global.ZADV_DISABLED
+	or event.surface ~= game.surfaces[ZADV.MainSurface]
+	or event.surface_index
+	then return false end
+	
+	-- event lock
+	if global.ZADV_InProcess then return
+	else global.ZADV_InProcess = true end
+	
+	-- variables
+	local position = Area.center(event.area)
+	local skip_chunk = false
+	
+	-- get chunk data
+	local cpos = ChunkFromPosition(position)
+	global.ZADV.Chunks = global.ZADV.Chunks or {}
+	if global.ZADV.Chunks[cpos.x] and global.ZADV.Chunks[cpos.x][cpos.y] then
+		skip_chunk = global.ZADV.Chunks[cpos.x][cpos.y] end
+	
+	-- check collisions and if true - ignore chunk
+	if AreaHasCollisions(event.surface, event.area) then 
+		skip_chunk = true
+	end
+	
+	-- check if chunk already generated or in starting area - ignore if true
+	if skip_chunk or isInsideBounds(position, ZADV.Settings['zadv_starting_radius']) then
+		-- event unlock and exit
+		global.ZADV_InProcess = false
+		return
+	end
+	
+	-- get random area
+	local newarea = GetRandomArea(position, event.surface)
+	
+	-- if we get one...
+	if newarea then
+		
+		-- let's build it
+		newarea.workarea = event.area
+		AplyBlueprintAuto(event.surface, position, newarea)
+	
+	end
+	
+	-- event unlock
+	if not global.ZADV_ForceUnlock then global.ZADV_InProcess = false end
+	
+end
 
 --
 -- INITIALIZATION
@@ -644,24 +745,11 @@ local function PrepareBlueprint()
 	
 end
 
---- Reassign events after loadstring
-function ReEvent()
-
-	global.ZADV.Events = global.ZADV.Events or {}
-	
-	for event,data in pairs(global.ZADV.Events) do
-		if not script.get_event_handler(event) then
-			script.on_event(event, Global_Handler)
-		end
-	end
-	
-end
-
 
 --- detect scenarios
 local function detectScenarios()
 	
-	if not global.ZADV_DISABLED then
+	if not global.ZADV_DISABLED and not global.ZADV_DetectionComplete then
 	
 		if not global.ZADV_PVP_MODE and table.find(game.surfaces, function(v) if v.name:find('battle_surface_') then return true end end) then
 			
@@ -686,12 +774,21 @@ local function detectScenarios()
 			end
 			
 		elseif table.contains( game.forces, {'black','blue','brown','cyan'} ) then
-				debug('ZADV_DISABLED - TEAM CHALLANGE')
-				global.ZADV_DISABLED = true
-		
-		elseif false then
+			debug('ZADV_DISABLED - TEAM CHALLANGE')
+			global.ZADV_DISABLED = true
+			
+		elseif game.tick < 10 and game.surfaces[1].count_entities_filtered{area=Position.expand_to_area({0,0},5), name='rocket-silo'} > 0 then
+			debug('ZADV_DISABLED - WAVE DEFENCE')
+			global.ZADV_DISABLED = true
+			
+		elseif game.tick < 10 and game.surfaces[1].count_entities_filtered{area=Position.expand_to_area({0,0},5), name='red-chest'} > 0 then
+			debug('ZADV_DISABLED - SUPPLY CHALANGE')
+			global.ZADV_DISABLED = true
+			
 		end
-	
+		
+		global.ZADV_DetectionComplete = true
+		
 	end
 end
 
@@ -795,33 +892,36 @@ local function UnlockChunkEvent(tick)
 	end
 end
 
+--
+-- EVENTS
+--
+
 --- Global handler
 function Global_Handler(event)
 		
 	if ZADV.debug_pulse then
 		ZADV.debug_pulse = false
 		log(string.format('\n\n[[debug_pulse]]\n%s\n%s',serpb(global),serpb(ZADV)))
+		game.print("Data dump created")
 	end
 	
 	Init()
 	detectScenarios()
 	UnlockChunkEvent(event.tick)
 	
-	if not global.ZADV_DISABLED and ZADV_initialized and global.ZADV_EventLock ~= game.tick then
+	if not global.ZADV_DISABLED and ZADV_initialized then
 		
-		global.ZADV_EventLock = game.tick
-		
-		for 
-		id,data in pairs(global.ZADV.Events)
-		do
+		if 
+		global.ZADV.Events[event.name]
+		then
 			for
-			dname,edata in pairs(data)
+			dname,edata in pairs(global.ZADV.Events[event.name])
 			do
 				if
 				ZADV.Data[edata.mod] and
 				ZADV.Data[edata.mod][edata.area] and
 				ZADV.Data[edata.mod][edata.area].Events and
-				type(ZADV.Data[edata.mod][edata.area].Events[id]) == 'function' and
+				type(ZADV.Data[edata.mod][edata.area].Events[event.name]) == 'function' and
 				global.ZADV.ArData[dname]
 				then
 					
@@ -835,9 +935,9 @@ function Global_Handler(event)
 						then
 							
 							
-							local done, err = pcall(ZADV.Data[edata.mod][edata.area].Events[id], event,  global.ZADV.ArData[dname][indx], game)
+							local done, err = pcall(ZADV.Data[edata.mod][edata.area].Events[event.name], event,  global.ZADV.ArData[dname][indx], game)
 							if not done and err then
-								debug("\n%s.on_event[%s] return with error:\n--\t%s\n", dname, id, err)
+								debug("\n%s.on_event[%s] return with error:\n--\t%s\n", dname, event.name, err)
 							end
 						
 						elseif
@@ -852,117 +952,16 @@ function Global_Handler(event)
 							if cnt == 0 then
 								
 								global.ZADV.ArData[dname] = nil
-								global.ZADV.Events[id][dname] = nil
+								global.ZADV.Events[event.name][dname] = nil
 								
 							end
 							
 end end end end end end end
 
 
---
--- EVENTS
---
-
---- new chunk generated event handler
-local function GenerateChunkArea( event )
-	
-	-- not initialized or disabled or wrong surface?
-	if not ZADV_initialized or global.ZADV_DISABLED
-	or event.surface ~= game.surfaces[ZADV.MainSurface]
-	or event.surface_index
-	then return false end
-	
-	-- event lock
-	if global.ZADV_InProcess then return
-	else global.ZADV_InProcess = true end
-	
-	-- variables
-	local position = Area.center(event.area)
-	local cpos = ChunkFromPosition(position)
-	local skip_chunk = false
-	
-	-- get chunk data
-	global.ZADV.Chunks = global.ZADV.Chunks or {}
-	if global.ZADV.Chunks[cpos.x] and global.ZADV.Chunks[cpos.x][cpos.y] then
-		skip_chunk = global.ZADV.Chunks[cpos.x][cpos.y] end
-	
-	-- check collisions and if true - ignore chunk
-	if CollisionCheckArea(event.surface, event.area) then 
-		skip_chunk = true
-	end
-	
-	-- check if chunk already generated or in starting area - ignore if true
-	if skip_chunk or isInsideBounds(position, ZADV.Settings['zadv_starting_radiius']) then
-		-- event unlock and exit
-		global.ZADV_InProcess = false
-		return
-	end
-	
-	-- get random area
-	local newarea = GetRandomArea(position)
-	
-	-- if we get one...
-	if newarea then
-	
-		-- check area size
-		if newarea.area.size.x > 32 or newarea.area.size.y > 32 then
-			
-			global.ZADV_NextForceUnlock = game.tick + 300
-			global.ZADV_ForceUnlock = true
-			
-			-- apply offset to x
-			if position.x < 0 then position.x = position.x - 16
-			else position.x = position.x + 16 end
-			
-			-- apply offset to y
-			if position.y < 0 then position.y = position.y - 16
-			else position.y = position.y + 16 end
-			
-			-- calculate new area box
-			newarea.bigchunkarea = {
-				left_top={x = position.x-(newarea.area.size.x/2), y = position.y-(newarea.area.size.y/2)},
-				right_bottom={x = position.x+(newarea.area.size.x/2), y = position.y+(newarea.area.size.y/2)}
-			}
-			
-			-- re-check collisions
-			if CollisionCheckArea(event.surface, newarea.bigchunkarea) then
-				return
-			end
-			
-			-- mark chunks
-			global.ZADV.Chunks[cpos.x] = {}
-			global.ZADV.Chunks[cpos.x-1] = {}
-			global.ZADV.Chunks[cpos.x+1] = {}
-			global.ZADV.Chunks[cpos.x][cpos.y+1] = true
-			global.ZADV.Chunks[cpos.x][cpos.y-1] = true
-			global.ZADV.Chunks[cpos.x-1][cpos.y] = true
-			global.ZADV.Chunks[cpos.x-1][cpos.y-1] = true
-			global.ZADV.Chunks[cpos.x-1][cpos.y+1] = true
-			global.ZADV.Chunks[cpos.x+1][cpos.y] = true
-			global.ZADV.Chunks[cpos.x+1][cpos.y-1] = true
-			global.ZADV.Chunks[cpos.x+1][cpos.y+1] = true
-		
-		end
-		
-		-- let's build it
-		newarea.chunkarea = event.area
-		AplyBlueprintAuto(event.surface, position, newarea)
-		
-		-- mark chunk
-		global.ZADV.Chunks[cpos.x] = {}
-		global.ZADV.Chunks[cpos.x][cpos.y] = true
-	
-	end
-	
-	-- event unlock
-	if not global.ZADV_ForceUnlock then global.ZADV_InProcess = false end
-	
-end
-
-
 script.on_event(defines.events.on_tick, Global_Handler)
-script.on_event(defines.events.on_chunk_generated, GenerateChunkArea)
---script.on_event(defines.events.on_chunk_charted, GenerateChunkArea)
+script.on_event(defines.events.on_chunk_generated, Generateworkarea)
+--script.on_event(defines.events.on_chunk_charted, Generateworkarea)
 
 --
 -- Script commands
@@ -995,7 +994,17 @@ remote.add_interface("ZADV", {
 	-- /c remote.call("ZADV", "dump")
 	dump = function()
 		ZADV.debug_pulse = true
-		game.print("Data dump created")
+	end,
+
+	-- /c remote.call("ZADV", "dinfo")
+	dinfo = function()
+		ZADV.dinfo = game.players[1].gui.left.add{type='frame', name='ZADV_dinfo', direction='vertical'}
+		ZADV.dinfo.add{type='label', name='info', direction='vertical', style='zadv_lable_info'}
+		script.on_event(defines.events.on_tick, function()
+			local pos = game.players[1].position
+			local chnk = ChunkFromPosition(pos)
+			ZADV.dinfo['info'].caption = string.format('Player:\nx = %.2f\ny = %.2f\nChunk:\nx = %.2f\ny = %.2f\nDistance: %.2f',pos.x, pos.y, chnk.x, chnk.y, Position.distance(pos, {x=0,y=0}))
+		end)
 	end,
 })
 

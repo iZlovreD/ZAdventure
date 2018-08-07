@@ -2,7 +2,7 @@
 ZADV = {}
 ZADV.Data = {}
 ZADV.Settings = {}
-ZADV.debug = 2
+ZADV.debug = 0
 
 local format = string.format
 
@@ -25,7 +25,7 @@ end
 
 
 ZADV.Settings['zadv_global_frequency'] = settings.startup["zadv_global_frequency"].value
-ZADV.Settings['zadv_starting_radiius'] = settings.startup["zadv_starting_radiius"].value
+ZADV.Settings['zadv_starting_radius'] = settings.startup["zadv_starting_radius"].value
 ZADV.Settings['zadv_disable_in_pvp'] = settings.startup["zadv_disable_in_pvp"].value
 
 
@@ -41,4 +41,3 @@ ZADV.Data[areas.ModName] = ZADV.Data[areas.ModName] or {}
 for name,area in pairs(areas.area) do
 	ZADV.Data[areas.ModName][name] = area
 end
-

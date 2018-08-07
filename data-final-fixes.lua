@@ -90,8 +90,8 @@ if not skiparea[modname..bpname] then
 		if bpname == "TEST" then debug(2,BPlib.ParseToJson(bpdata.bp)) end
 		
 		-- check area size
-		local maxsize = 2^6 
-		if _data.area.size.x <= maxsize and _data.area.size.y <= maxsize then
+		local maxsize = 2^8 
+		if bpdata.skip_size_restrictions or (_data.area.size.x <= maxsize and _data.area.size.y <= maxsize) then
 		
 			ZADV.Data[modname] = ZADV.Data[modname] or {}
 			
@@ -126,6 +126,7 @@ if not skiparea[modname..bpname] then
 			ZADV.Data[modname][bpname].remoteness_max 		= _checkvalue(bpdata.remoteness_max, 'number', 0)
 			ZADV.Data[modname][bpname].only_once 			= _checkvalue(bpdata.only_once, 'boolean', false)
 			ZADV.Data[modname][bpname].max_copies 			= _checkvalue(bpdata.max_copies, 'number', 0)
+			ZADV.Data[modname][bpname].progressive_remoteness= _checkvalue(bpdata.progressive_remoteness, 'number', 0)
 			ZADV.Data[modname][bpname].ignore_technologies	= _checkvalue(bpdata.ignore_technologies, 'boolean', true)
 			ZADV.Data[modname][bpname].force 				= _checkforce(bpdata.force, 'string', "neutral")
 			ZADV.Data[modname][bpname].unique 				= _checkvalue(bpdata.unique, 'boolean', false)
@@ -133,6 +134,7 @@ if not skiparea[modname..bpname] then
 			ZADV.Data[modname][bpname].random_direction 	= _checkvalue(bpdata.random_direction, 'boolean', false)
 			ZADV.Data[modname][bpname].finalize_build		= _checkvalue(bpdata.finalize_build, 'boolean', true)
 			ZADV.Data[modname][bpname].force_reveal			= _checkvalue(bpdata.force_reveal, 'boolean', false)
+			ZADV.Data[modname][bpname].only_freeplay		= _checkvalue(bpdata.only_freeplay, 'boolean', false)
 			ZADV.Data[modname][bpname].ignore_water 		= _checkvalue(bpdata.ignore_water, 'boolean', false)
 			ZADV.Data[modname][bpname].ignore_all_collision	= _checkvalue(bpdata.ignore_all_collision, 'boolean', false)
 			
@@ -153,8 +155,8 @@ if not skiparea[modname..bpname] then
 			ZADV.Data[modname][bpname].Events	 			= (bpdata.Events and type(bpdata.Events) == 'table') and table.deepcopy(bpdata.Events) or nil
 			ZADV.Data[modname][bpname].messages 			= table.deepcopy((bpdata.messages and type(bpdata.messages) == 'table') and bpdata.messages or { { msg = "", color = {r=0.31, g=0.70, b=1, a=0.8} } })
 			
-			ZADV.Data[modname][bpname].remoteness_min 		= ZADV.Settings['zadv_starting_radiius'] + ZADV.Data[modname][bpname].remoteness_min
-			ZADV.Data[modname][bpname].remoteness_max 		= ZADV.Data[modname][bpname].remoteness_max == 0 and 0 or ZADV.Settings['zadv_starting_radiius'] + ZADV.Data[modname][bpname].remoteness_max
+			ZADV.Data[modname][bpname].remoteness_min 		= ZADV.Settings['zadv_starting_radius'] + ZADV.Data[modname][bpname].remoteness_min
+			ZADV.Data[modname][bpname].remoteness_max 		= ZADV.Data[modname][bpname].remoteness_max == 0 and 0 or ZADV.Settings['zadv_starting_radius'] + ZADV.Data[modname][bpname].remoteness_max
 			ZADV.Data[modname][bpname].max_copies 			= ZADV.Data[modname][bpname].max_copies <= 0 and -1 or ZADV.Data[modname][bpname].max_copies
 			
 			ZADV.Data[modname][bpname].current_force		= ''..ZADV.Data[modname][bpname].force
@@ -181,21 +183,21 @@ ZADV.ControlString = md5.sumhexa(ZADV.ControlString:gsub("[_- ]",''))
 for _,com in pairs(delete) do local _=loadstring(com); _() end
 
 
-debug(0,'-------------------------------------')
-debug(0, total, counter, replaced>0 and replaced or "")
-debug(0,'-------------------------------------')
-
-
 --
 -- Store Prepared Data to Control
 --
-debug(1,ZADV)
 local dump = serpent.dump(ZADV.Data)
 local chunks = math.floor(#dump / 199) + 1
 local sdump = serpent.dump(ZADV.Settings)
 local schunks = math.floor(#sdump / 199) + 1
 local ndump = serpent.dump(ZADV.NamePairList)
 local nchunks = math.floor(#ndump / 199) + 1
+
+debug(0,'-------------------------------------')
+debug(0, total, counter, replaced>0 and replaced or "")
+debug(1,' Data split on %s pices', chunks+schunks+nchunks)
+debug(0,'-------------------------------------')
+debug(1,ZADV)
 
 	-- remember number of chunks
 	data:extend({

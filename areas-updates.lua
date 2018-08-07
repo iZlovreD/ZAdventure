@@ -298,137 +298,6 @@ or mods["pycoalprocessing"] then
 	}
 end
 
-if settings.startup["zadv_area_yellow"].value
-or settings.startup["zadv_area_red"].value
-or settings.startup["zadv_area_blue"].value then
-	local recipe = table.deepcopy(data.raw.recipe['iron-gear-wheel'])
-	recipe.name = "zadv-iron-gear-wheel"
-	recipe.hidden = true
-	recipe.enabled = true
-	recipe.hidden_from_flow_stats = true
-	recipe.flags = {'hidden'}
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients = { {"iron-plate", 2} }
-	recipe.result = "iron-gear-wheel"
-	data:extend({recipe})
-	
-	recipe = table.deepcopy(data.raw.recipe['transport-belt'])
-	recipe.name = "zadv-transport-belt"
-	recipe.hidden = true
-	recipe.enabled = true
-	recipe.hidden_from_flow_stats = true
-	recipe.flags = {'hidden'}
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients =
-		{
-			{"iron-plate", 1},
-			{"iron-gear-wheel", 1}
-		}
-	recipe.result = "transport-belt"
-	data:extend({recipe})
-
-	recipe = table.deepcopy(data.raw.recipe['transport-belt'])
-	recipe.name = "zadv-transport-belt-slow"
-	recipe.hidden = true
-	recipe.enabled = true
-	recipe.energy_required = 6
-	recipe.hidden_from_flow_stats = true
-	recipe.flags = {'hidden'}
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients =
-		{
-			{"iron-plate", 1},
-			{"iron-gear-wheel", 1}
-		}
-	recipe.result = "transport-belt"
-	data:extend({recipe})
-end
-
-if settings.startup["zadv_area_red"].value
-or settings.startup["zadv_area_blue"].value then
-	local recipe = table.deepcopy(data.raw.recipe['fast-transport-belt'])
-	recipe.name = "zadv-fast-transport-belt"
-	recipe.hidden = true
-	recipe.enabled = true
-	recipe.hidden_from_flow_stats = true
-	recipe.flags = {'hidden'}
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients =
-		{
-			{"iron-gear-wheel", 2},
-			{"transport-belt", 1}
-		}
-	recipe.result = "fast-transport-belt"
-	data:extend({recipe})
-
-	recipe = table.deepcopy(data.raw.recipe['fast-transport-belt'])
-	recipe.name = "zadv-fast-transport-belt-slow"
-	recipe.hidden = true
-	recipe.enabled = true
-	recipe.energy_required = 12
-	recipe.hidden_from_flow_stats = true
-	recipe.flags = {'hidden'}
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients =
-		{
-			{"iron-gear-wheel", 2},
-			{"transport-belt", 1}
-		}
-	recipe.result = "fast-transport-belt"
-	data:extend({recipe})
-end
-
-if settings.startup["zadv_area_blue"].value then
-	
-	local recipe = table.deepcopy(data.raw.recipe['express-transport-belt'])
-	recipe.name = "zadv-express-transport-belt-slow"
-	recipe.hidden = true
-	recipe.enabled = true
-	recipe.energy_required = 19
-	recipe.hidden_from_flow_stats = true
-	recipe.flags = {'hidden'}
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients =
-		{
-			{"iron-gear-wheel", 5},
-			{"fast-transport-belt", 1},
-			{type="fluid", name="lubricant", amount=20}
-		}
-	recipe.result = "express-transport-belt"
-	data:extend({recipe})
-	
-end
-
-if settings.startup["zadv_area_yellow"].value then
-ret.area['yellow belts'] = {
-	
-	areadata = {
-		['iron-gear-wheel'] = 'zadv-iron-gear-wheel',
-		['transport-belt'] = 'zadv-transport-belt-slow'
-	}
-	
-	,update_for = { modname="ZADV_Base", areaname="yellow belts" }
-}
-end
-
-if settings.startup["zadv_area_red"].value then
-ret.area['red belts'] = {
-	
-	areadata = {
-		['iron-gear-wheel'] = 'zadv-iron-gear-wheel',
-		['transport-belt'] = 'zadv-transport-belt',
-		['fast-transport-belt'] = 'zadv-fast-transport-belt-slow'
-	}
-	
-	,update_for = { modname="ZADV_Base", areaname="red belts" }
-}
-end
 
 if settings.startup["zadv_area_blue"].value then
 	if mods["omnimatter_fluid"] then
@@ -437,16 +306,6 @@ if settings.startup["zadv_area_blue"].value then
 			,update_for = { modname="ZADV_Base", areaname="blue belts" }
 		}
 	else
-		ret.area['blue belts'] = {
-			areadata = {
-				['basic-oil-processing'] = 'basic-oil-processing',
-				['lubricant'] = 'lubricant',
-				['transport-belt'] = 'zadv-transport-belt',
-				['fast-transport-belt'] = 'zadv-fast-transport-belt',
-				['express-transport-belt'] = 'zadv-express-transport-belt-slow'
-			}
-			,update_for = { modname="ZADV_Base", areaname="blue belts" }
-		}
 		if mods["omnimatter"] then
 			ret.area['blue belts_bp'] = {
 				bp = "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"
@@ -456,11 +315,7 @@ if settings.startup["zadv_area_blue"].value then
 		if mods["omnimatter_permutation"] then
 			ret.area['blue belts_rec'] = {
 				areadata = {
-					['basic-oil-processing'] = 'basic-oil-processing-omniperm-1-1',
-					['lubricant'] = 'lubricant',
-					['transport-belt'] = 'zadv-transport-belt',
-					['fast-transport-belt'] = 'zadv-fast-transport-belt',
-					['express-transport-belt'] = 'zadv-express-transport-belt-slow'
+					['basic-oil-processing'] = 'basic-oil-processing-omniperm-1-1'
 				}
 				,update_for = { modname="ZADV_Base", areaname="blue belts" }
 			}
