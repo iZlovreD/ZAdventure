@@ -126,6 +126,7 @@ if not skiparea[modname..bpname] then
 			ZADV.Data[modname][bpname].remoteness_max 		= _checkvalue(bpdata.remoteness_max, 'number', 0)
 			ZADV.Data[modname][bpname].only_once 			= _checkvalue(bpdata.only_once, 'boolean', false)
 			ZADV.Data[modname][bpname].max_copies 			= _checkvalue(bpdata.max_copies, 'number', 0)
+			ZADV.Data[modname][bpname].nearest_copy			= _checkvalue(bpdata.nearest_copy, 'number', 0)
 			ZADV.Data[modname][bpname].progressive_remoteness= _checkvalue(bpdata.progressive_remoteness, 'number', 0)
 			ZADV.Data[modname][bpname].ignore_technologies	= _checkvalue(bpdata.ignore_technologies, 'boolean', true)
 			ZADV.Data[modname][bpname].force 				= _checkforce(bpdata.force, 'string', "neutral")

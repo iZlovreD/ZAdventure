@@ -1,8 +1,22 @@
+---------------------------------------------------------------------------------------------------
+Version: 1.16.0
+Date: 08/08/2018
+  News:
+    - Additional memory usage optimization.
+    - New property for area prototype "nearest_copy".
+  Changes:
+    - Enemies in the occupied base receive upgrades.
+    - Change mod version assignation.
+       Now minor version represent amount of area types and followed by build number.
+  Bugfixes:
+    - Polishing Autodrome.
 
+---------------------------------------------------------------------------------------------------
 Version: 1.1.9
 Date: 08/08/2018
   Changes:
     - Low-res images added.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.8
 Date: 07/08/2018
@@ -17,6 +31,7 @@ Date: 07/08/2018
     - Now, to get items from Danger chest, players required to come closer.
   Bugfixes:
     - Fix for random seed overflow.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.7
 Date: 01/08/2018
@@ -27,6 +42,8 @@ Date: 01/08/2018
     - Rebalance production speed for bel areas.
   Bugfixes:
     - Fix for Occupied base behaviour.
+
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.6
 Date: 28/07/2018
@@ -34,6 +51,7 @@ Date: 28/07/2018
     - Blue belt area - assembler machine 3 now rotatable.
   Bugfixes:
     - Re upload mod to fix downloading from mod portal.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.5
 Date: 28/07/2018
@@ -51,22 +69,26 @@ Date: 28/07/2018
     - Small update for area probability generator logic.
   Bugfixes:
     - Additional check for nil values.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.4
 Date: 24/07/2018
   News:
     - Added suport for Alien Biomes mod
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.3
 Date: 23/07/2018
   Bugfixes:
     - Fix force related bugs part 2.
     - Fix for incorrect recipes
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.2
 Date: 23/07/2018
   Bugfixes:
     - Fix force related bugs
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.1
 Date: 22/07/2018
@@ -76,6 +98,7 @@ Date: 22/07/2018
   Bugfixes:
     - Fix of generation inside starting areas in pvp scenario
     - Fix "Unique per force" restriction mechanics
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.1.0
 Date: 19/07/2018
@@ -91,11 +114,13 @@ Date: 19/07/2018
     - Updated instructions for area creation in example mod (Event handling).
     - Renamed "userdata" to "areadata" in area structure.
     - Due to changes, may be incompatible with previous saves.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.8
 Date: 16/07/2018
   News:
     - New area "Random technology"
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.7
 Date: 16/07/2018
@@ -103,26 +128,31 @@ Date: 16/07/2018
     - New area "Random recipe"
   Bugfixes:
     - fix for empty entitiy list
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.6
 Date: 15/07/2018
   Bugfixes:
     - of fixes =)
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.5
 Date: 15/07/2018
   News:
     - New unique dangerous area "Occupied base"
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.3
 Date: 14/07/2018
   Bugfixes:
     - maze chest destruction.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2
 Date: 14/07/2018
   Bugfixes:
     - data mismatch fix.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.1
 Date: 14/07/2018
@@ -130,21 +160,25 @@ Date: 14/07/2018
     - Change minimal remoteness for all areas.
   Bugfixes:
     - Add additional check for nil values.
+
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.0
 Date: 14/07/2018
   News:
     - Alpha 1.
+
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.3
 Date: 08/07/2018
   News:
     - Pre-Alpha testing.
+
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.2
 Date: 07/07/2018
   News:
     - core mechanics testing.
+
 ---------------------------------------------------------------------------------------------------
 Version: 0.0.1
 Date: 04/07/2018

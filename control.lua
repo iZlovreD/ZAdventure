@@ -21,6 +21,7 @@ local serpd = serpent.dump
 local serpb = serpent.block
 local ZADV = {}
 local ZADV_initialized = false
+ZADV.errors = {}
 
 Color = {
 	black 	= {r = 0.0, g = 0.0, b = 0.0},
@@ -261,8 +262,20 @@ local function GetRandomArea(pos, surface)
 				end
 			end
 			
+			-- Check if last copy too close
+			local skip_distance = false
+			ZADV.Data[mn][an].copies = ZADV.Data[mn][an].copies or {}
+			if #ZADV.Data[mn][an].copies then
+				for _,p in pairs(ZADV.Data[mn][an].copies) do
+					if Position.distance(p, pos) < ar.nearest_copy * 32 then
+						skip_distance = true
+					end
+				end
+			end
+			
+			
 			-- check if no more copiees allowed
-			if not global.ZADV.restrictedareas[nf] and not skip_force
+			if not global.ZADV.restrictedareas[nf] and not skip_force and not skip_distance
 			and (roll <= ar.probability + (ZADV.debug*200)) then
 				
 				-- technology check
@@ -364,6 +377,10 @@ local function GetRandomArea(pos, surface)
 			or ZADV.Data[a][b].unique and 0 or math.max(0, global.ZADV.copy_per_force[n][f] - 1)
 			--debug('3 %s',serpb(global.ZADV.copy_per_force))
 	end
+	
+	-- save last position
+	ZADV.Data[a][b].copies = ZADV.Data[a][b].copies or {}
+	table.insert(ZADV.Data[a][b].copies, pos)
 	
 	-- if only once or no more copiees
 	if ZADV.Data[a][b].only_once or copy_left then
@@ -523,7 +540,17 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					if type(newarea.ScriptForEach) == 'function' then
 					
 						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstor, areadata)
-						if not done then debug("\n[%s].ScriptForEach return with error::\n--\t%s\n", newarea.name, err) end
+						if not done then
+							local str = string.format("\n[%s].ScriptForEach error::\n\t%s\n", newarea.name, err:gsub('function ',''))
+							if not ZADV.errors[newarea.name ..'ScriptForEach'] then
+								local _d = ZADV.debug
+								ZADV.debug = _d >= 1 and _d or 1
+								ZADV.errors[dname ..'_'.. event.name] = str
+								game.print(str)
+								ZADV.debug = _d
+								debug(str)
+							end
+						end
 						
 						if ZADV.debug >= 2 and newarea.name:find('TEST') then
 							local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, entity, namelist, locstore, areadata)
@@ -538,7 +565,11 @@ local function AplyBlueprintAuto(surface, center, newarea)
 -------------------------------------------------------------------------------------------------------------------------------------------
 							end))()
 							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstor, areadata)
-							if not done then debug("\n[[DEBUG]]\n[%s].ScriptForEach return with error::\n--\t%s\n", newarea.name, err) end
+							if not done then
+								if not ZADV.errors[newarea.name ..'ScriptForEach [[DEBUG]]'] then
+									debug("\n[[DEBUG]]\n[%s].ScriptForEach error::\n\t%s\n", newarea.name, err:gsub('function ',''))
+								end
+							end
 						end
 						
 					end
@@ -554,7 +585,17 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		if type(newarea.ScriptForAll) == 'function' then
 		
 			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata)
-			if not done then debug("\n[%s].ScriptForAll return with error::\n--\t%s\n", newarea.name, err) end
+			if not done then
+				local str = string.format("\n[%s].ScriptForAll error::\n\t%s\n", newarea.name, err:gsub('function ',''))
+				if not ZADV.errors[newarea.name ..'_ScriptForAll'] then
+					local _d = ZADV.debug
+					ZADV.debug = _d >= 1 and _d or 1
+					ZADV.errors[dname ..'_'.. event.name] = str
+					game.print(str)
+					ZADV.debug = _d
+					debug(str)
+				end
+			end
 			
 			if ZADV.debug >= 2 and newarea.name:find('TEST') then
 				local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
@@ -569,7 +610,11 @@ local function AplyBlueprintAuto(surface, center, newarea)
 -------------------------------------------------------------------------------------------------------------------------------------------
 				end))()
 				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata)
-				if not done then debug("\n[[DEBUG]]\n[%s].ScriptForAll return with error::\n--\t%s\n", newarea.name, err) end
+				if not done then
+					if not ZADV.errors[newarea.name ..'_ScriptForAll [[DEBUG]]'] then
+						debug("\n[[DEBUG]]\n[%s].ScriptForAll error::\n\t%s\n", newarea.name, err:gsub('function ',''))
+					end
+				end
 			end
 		end
 		
@@ -665,7 +710,7 @@ end
 
 
 --- new chunk generated event handler
-local function Generateworkarea( event )
+local function GenerateArea( event )
 	
 	-- not initialized or disabled or wrong surface?
 	if not ZADV_initialized or global.ZADV_DISABLED
@@ -708,6 +753,46 @@ local function Generateworkarea( event )
 		-- let's build it
 		newarea.workarea = event.area
 		AplyBlueprintAuto(event.surface, position, newarea)
+		
+		if global.ZADV.restrictedareas[newarea.name ..'-'.. newarea.current_force] then
+			newarea.bp = nil
+			if newarea.areadata and newarea.areadata.bp then
+				newarea.areadata.bp = nil
+			end
+			if ZADV.debug == 0 then
+				newarea.area = nil
+				newarea.copies = nil
+				newarea.destructible = nil
+				newarea.direction = nil
+				newarea.finalize_build = nil
+				newarea.force = nil
+				newarea.force_build = nil
+				newarea.force_reveal = nil
+				newarea.health = nil
+				newarea.ignore_all_collision = nil
+				newarea.ignore_technologies = nil
+				newarea.ignore_water = nil
+				newarea.lastcollisioncheck = nil
+				newarea.messages = nil
+				newarea.minable = nil
+				newarea.names = nil
+				newarea.nearest_copy = nil
+				newarea.only_freeplay = nil
+				newarea.only_once = nil
+				newarea.operable = nil
+				newarea.order_deconstruction = nil
+				newarea.probability = nil
+				newarea.progressive_remoteness = nil
+				newarea.random_direction = nil
+				newarea.remains = nil
+				newarea.remoteness_max = nil
+				newarea.remoteness_min = nil
+				newarea.rotatable = nil
+				newarea.techs = nil
+				newarea.unique = nil
+				newarea.workarea = nil
+			end
+		end
 	
 	end
 	
@@ -878,7 +963,10 @@ local function Init()
 		
 		ZADV_initialized = true
 		global.ZADV_PVP_MODE = false
-		debug("Initialization complete.")
+		
+		if ZADV.debug == 0 then
+			log("[[ZADV]] Initialization complete.")
+		else debug("Initialization complete.") end
 		
 	end
 end
@@ -937,7 +1025,15 @@ function Global_Handler(event)
 							
 							local done, err = pcall(ZADV.Data[edata.mod][edata.area].Events[event.name], event,  global.ZADV.ArData[dname][indx], game)
 							if not done and err then
-								debug("\n%s.on_event[%s] return with error:\n--\t%s\n", dname, event.name, err)
+								local str = string.format("\n%s.on_event[%s] error:\n\t%s\n", dname, event.name, err:gsub('function ',''))
+								if not ZADV.errors[dname ..'_'.. event.name] then
+									local _d = ZADV.debug
+									ZADV.debug = _d >= 1 and _d or 1
+									ZADV.errors[dname ..'_'.. event.name] = str
+									game.print(str)
+									ZADV.debug = _d
+									debug(str)
+								end
 							end
 						
 						elseif
@@ -960,8 +1056,8 @@ end end end end end end end
 
 
 script.on_event(defines.events.on_tick, Global_Handler)
-script.on_event(defines.events.on_chunk_generated, Generateworkarea)
---script.on_event(defines.events.on_chunk_charted, Generateworkarea)
+script.on_event(defines.events.on_chunk_generated, GenerateArea)
+--script.on_event(defines.events.on_chunk_charted, GenerateArea)
 
 --
 -- Script commands

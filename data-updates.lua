@@ -168,14 +168,118 @@ end
 data.raw.inserter['stack-inserter'].allow_custom_vectors = true
 
 
-local spawner = table.deepcopy(data.raw['unit-spawner']['biter-spawner'])
+local spawner = table.deepcopy(data.raw['unit']['medium-biter'])
+spawner.name = "zadv-medium-biter"
+spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable"}
+spawner.max_health = 350
+spawner.healing_per_tick = 0.04
+spawner.attack_parameters.cooldown = 25
+spawner.vision_distance = 65
+data:extend({spawner})
+
+spawner = table.deepcopy(data.raw['unit']['big-biter'])
+spawner.name = "zadv-big-biter"
+spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable"}
+spawner.max_health = 1350
+spawner.healing_per_tick = 0.04
+spawner.attack_parameters.cooldown = 25
+spawner.vision_distance = 45
+data:extend({spawner})
+
+spawner = table.deepcopy(data.raw['unit']['behemoth-biter'])
+spawner.name = "zadv-behemoth-biter"
+spawner.flags = {"placeable-off-grid", "breaths-air"}
+spawner.max_health = 6500
+spawner.healing_per_tick = 0.04
+spawner.attack_parameters.cooldown = 25
+data:extend({spawner})
+
+
+spawner = table.deepcopy(data.raw['unit']['medium-spitter'])
+spawner.name = "zadv-medium-spitter"
+spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable"}
+spawner.max_health = 350
+spawner.healing_per_tick = 0.04
+spawner.attack_parameters.cooldown = 55
+spawner.vision_distance = 65
+data:extend({spawner})
+
+spawner = table.deepcopy(data.raw['unit']['big-spitter'])
+spawner.name = "zadv-big-spitter"
+spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable"}
+spawner.max_health = 1350
+spawner.healing_per_tick = 0.04
+spawner.attack_parameters.cooldown = 75
+spawner.vision_distance = 45
+data:extend({spawner})
+
+spawner = table.deepcopy(data.raw['unit']['behemoth-spitter'])
+spawner.name = "zadv-behemoth-spitter"
+spawner.flags = {"placeable-off-grid", "breaths-air"}
+spawner.max_health = 6500
+spawner.healing_per_tick = 0.04
+spawner.attack_parameters.cooldown = 85
+data:extend({spawner})
+
+
+spawner = table.deepcopy(data.raw['unit-spawner']['biter-spawner'])
 spawner.name = "zadv-biter-spawner"
-spawner.flags = {}
+spawner.flags = {"placeable-neutral"}
+spawner.max_health = 2350
+spawner.autoplace = nil
+spawner.result_units = {
+	{"small-biter", {{0.0, 0.3}, {0.6, 0.0}}},
+	{"zadv-medium-biter", {{0.2, 0.0}, {0.6, 0.3}, {0.7, 0.1}}},
+	{"zadv-big-biter", {{0.5, 0.0}, {1.0, 0.4}}},
+	{"zadv-behemoth-biter", {{0.9, 0.0}, {1.0, 0.3}}}
+}
 data:extend({spawner})
 
 spawner = table.deepcopy(data.raw['unit-spawner']['spitter-spawner'])
 spawner.name = "zadv-spitter-spawner"
+spawner.flags = {"placeable-neutral"}
+spawner.max_health = 2350
+spawner.autoplace = nil
+spawner.result_units = {
+	{"small-biter", {{0.0, 0.3}, {0.35, 0}}},
+	{"small-spitter", {{0.25, 0.0}, {0.5, 0.3}, {0.7, 0.0}}},
+	{"zadv-medium-spitter", {{0.4, 0.0}, {0.7, 0.3}, {0.9, 0.1}}},
+	{"zadv-big-spitter", {{0.5, 0.0}, {1.0, 0.4}}},
+	{"zadv-behemoth-spitter", {{0.9, 0.0}, {1.0, 0.3}}}
+}
+data:extend({spawner})
+
+spawner = table.deepcopy(data.raw['roboport']['roboport'])
+spawner.name = "zadv-roboport"
 spawner.flags = {}
+spawner.minable = nil
+spawner.max_health = 5000
+spawner.collision_box = nil
+spawner.selection_box = nil
+spawner.resistances =  {
+	{
+		type = "fire",
+		percent = 95
+	},
+	{
+		type = "impact",
+		percent = 100
+	}
+}
+spawner.dying_explosion = "big-explosion"
+spawner.energy_usage = "5kW"
+spawner.logistics_radius = 25
+spawner.construction_radius = 1500
+spawner.charge_approach_distance = 25
+spawner.draw_logistic_radius_visualization = false
+spawner.draw_construction_radius_visualization = false
+spawner.circuit_wire_connection_point = nil
+spawner.circuit_connector_sprites = nil
+spawner.circuit_wire_max_distance = nil
+spawner.default_available_logistic_output_signal = nil
+spawner.default_total_logistic_output_signal = nil
+spawner.default_available_construction_output_signal = nil
+spawner.default_total_construction_output_signal = nil
 data:extend({spawner})
 
 local racedata = table.deepcopy(data.raw['wall']['stone-wall'])
@@ -296,6 +400,7 @@ racedata.minable = nil
 racedata.operable = nil
 racedata.mined_sound = nil
 racedata.guns = nil
+racedata.health = 750
 racedata.inventory_size = 0
 racedata.stop_trigger[1].sound[1].volume = 1.2
 for _,v in pairs(racedata.animation.layers[2].stripes) do
@@ -324,6 +429,7 @@ data:extend({racedata})
 
 racedata = table.deepcopy(racedata)
 racedata.name = "zadv-race-car-green"
+racedata.health = 1000
 racedata.animation.layers[1].stripes[1].filename = "__ZAdventure__/graphics/entity/car/car-1-green.png"
 racedata.animation.layers[1].stripes[2].filename = "__ZAdventure__/graphics/entity/car/car-2-green.png"
 racedata.animation.layers[1].stripes[3].filename = "__ZAdventure__/graphics/entity/car/car-3-green.png"
@@ -338,6 +444,7 @@ data:extend({racedata})
 
 racedata = table.deepcopy(racedata)
 racedata.name = "zadv-race-car-red"
+racedata.health = 500
 racedata.animation.layers[1].stripes[1].filename = "__ZAdventure__/graphics/entity/car/car-1-red.png"
 racedata.animation.layers[1].stripes[2].filename = "__ZAdventure__/graphics/entity/car/car-2-red.png"
 racedata.animation.layers[1].stripes[3].filename = "__ZAdventure__/graphics/entity/car/car-3-red.png"
@@ -484,8 +591,10 @@ data:extend({racedata})
 data.raw['font']['zadv_lable_race_font_1'] = {
 	type = "font",
 	name = "zadv_lable_race_font_1",
-	from = "default",
-	size = 32,
+	from = "zadv-race-timer",
+	size = 52,
+	spacing = 1,
+	scale_font = false,
 	border = true,
 	border_color = {}
 }
@@ -505,6 +614,8 @@ data.raw['gui-style']['default']['zadv_lable_info'] = {
 	type = "label_style",
 	font = "default-bold",
 	maximal_width = 250,
+	top_padding = 0,
+	bottom_padding = 0,
 	single_line = false
 }
 data.raw['gui-style']['default']['zadv_lable_race_head'] = {
@@ -523,6 +634,7 @@ data.raw['gui-style']['default']['zadv_lable_race_info_white'] = {
 	type = "label_style",
 	parent = "zadv_lable_race_info",
 	font = "zadv_lable_race_font_1",
+	minimal_width = 180,
 	font_color = {r=1, g=1, b=1}
 }
 data.raw['gui-style']['default']['zadv_lable_race_info_green'] = {
