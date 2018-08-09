@@ -134,6 +134,8 @@ local function Rnd(min,max,adseed)
 	global.adseed = global.adseed < 0 and 0 - global.adseed or global.adseed
 	global.adseed = global.adseed > 4294967295 and 1 or global.adseed
 	local seed = game.tick + floor(tonumber(tostring({}):sub(8,-4))) + adseed
+	seed = seed < 0 and 0 - seed or seed
+	seed = seed > 4294967295 and game.tick or seed
 	global.generator = global.generator or game.create_random_generator(seed)
 	global.generator.re_seed(seed)
 	return math.min(max, math.max(min, floor(global.generator(min, math.max(min, base(max+global.adseed))) % max) ) )
