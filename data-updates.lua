@@ -1,7 +1,7 @@
 require 'util'
 
 do -- belts
-	local recipe = table.deepcopy(data.raw.recipe['iron-gear-wheel'])
+	local recipe = table.deepcopy(ZADV.backup['iron-gear-wheel'])
 	recipe.name = "zadv-iron-gear-wheel"
 	recipe.enabled = true
 	recipe.hidden = true
@@ -13,7 +13,7 @@ do -- belts
 	recipe.result = "iron-gear-wheel"
 	data:extend({recipe})
 
-	recipe = table.deepcopy(data.raw.recipe['transport-belt'])
+	recipe = table.deepcopy(ZADV.backup['recipe-transport-belt'])
 	recipe.name = "zadv-transport-belt"
 	recipe.enabled = true
 	recipe.hidden = true
@@ -28,7 +28,7 @@ do -- belts
 	recipe.result = "transport-belt"
 	data:extend({recipe})
 
-	recipe = table.deepcopy(data.raw.recipe['fast-transport-belt'])
+	recipe = table.deepcopy(ZADV.backup['recipe-fast-transport-belt'])
 	recipe.name = "zadv-fast-transport-belt"
 	recipe.enabled = true
 	recipe.hidden = true
@@ -43,7 +43,7 @@ do -- belts
 	recipe.result = "fast-transport-belt"
 	data:extend({recipe})
 
-	recipe = table.deepcopy(data.raw.recipe['transport-belt'])
+	recipe = table.deepcopy(ZADV.backup['recipe-transport-belt'])
 	recipe.name = "zadv-transport-belt-slow"
 	recipe.enabled = true
 	recipe.hidden = true
@@ -59,7 +59,7 @@ do -- belts
 	recipe.result = "transport-belt"
 	data:extend({recipe})
 
-	recipe = table.deepcopy(data.raw.recipe['fast-transport-belt'])
+	recipe = table.deepcopy(ZADV.backup['recipe-fast-transport-belt'])
 	recipe.name = "zadv-fast-transport-belt-slow"
 	recipe.enabled = true
 	recipe.hidden = true
@@ -74,8 +74,10 @@ do -- belts
 	}
 	recipe.result = "fast-transport-belt"
 	data:extend({recipe})
-		
-	recipe = table.deepcopy(data.raw.recipe['express-transport-belt'])
+	
+	data:extend({ZADV.backup['lubricant']})
+	data:extend({ZADV.backup['recipe-lubricant']})
+	recipe = table.deepcopy(ZADV.backup['recipe-express-transport-belt'])
 	recipe.name = "zadv-express-transport-belt-slow"
 	recipe.enabled = true
 	recipe.hidden = true
@@ -93,7 +95,7 @@ do -- belts
 	data:extend({recipe})
 end
 do -- maze
-	local slow_path = table.deepcopy(data.raw.tile['stone-path'])
+	local slow_path = table.deepcopy(ZADV.backup['stone-path'])
 	slow_path.name = "zadv-slow-path-30"
 	slow_path.minable = nil
 	slow_path.walking_speed_modifier = 0.7
@@ -114,7 +116,7 @@ do -- maze
 	data:extend({slow_path3})
 
 
-	local slow_brick = table.deepcopy(data.raw.item['stone-brick'])
+	local slow_brick = table.deepcopy(ZADV.backup['stone-brick'])
 	slow_brick.name = "zadv-slow-brick-30"
 	slow_brick.flags = {'hidden'}
 	slow_brick.stack_size = 9999
@@ -168,7 +170,7 @@ do -- base
 	local s1,s2 = 1.25,1.5
 	local c = { r = 0.9, g = 0.9, b = 0.9 }
 	
-	local spawner = table.deepcopy(data.raw['corpse']['medium-biter-corpse'])
+	local spawner = table.deepcopy(ZADV.backup['medium-biter-corpse'])
 	spawner.name = "zadv-medium-beast-corpse"
     spawner.selection_box = nil
     spawner.flags = {"placeable-off-grid", "not-on-map"}
@@ -246,31 +248,31 @@ do -- base
 	data:extend({spawner})
 	
 	
-	spawner = table.deepcopy(data.raw['unit']['medium-biter'])
+	spawner = table.deepcopy(ZADV.backup['medium-biter'])
 	spawner.name = "zadv-medium-beast"
 	spawner.corpse = "zadv-medium-beast-corpse"
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable", "not-flammable"}
 	spawner.max_health = 350
 	spawner.healing_per_tick = 0.04
 	spawner.movement_speed = 0.225
-	spawner.run_animation = table.deepcopy(data.raw.player.player.animations[1].running)
-	spawner.attack_parameters.animation = table.deepcopy(data.raw.player.player.animations[1].mining_with_tool)
-	spawner.run_animation.layers[2].tint = { r = 0.72, g = 0.41, b = 0 }
-	spawner.run_animation.layers[2].hr_version.tint = { r = 0.72, g = 0.41, b = 0 }
-	spawner.attack_parameters.animation.layers[2].tint = { r = 0.72, g = 0.41, b = 0 }
-	spawner.attack_parameters.animation.layers[2].hr_version.tint = { r = 0.72, g = 0.41, b = 0 }
+	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][1].running)
+	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][1].mining_with_tool)
+	spawner.run_animation.layers[2].tint = { r = 0.72, g = 0.21, b = 0 }
+	spawner.run_animation.layers[2].hr_version.tint = { r = 0.72, g = 0.21, b = 0 }
+	spawner.attack_parameters.animation.layers[2].tint = { r = 0.72, g = 0.21, b = 0 }
+	spawner.attack_parameters.animation.layers[2].hr_version.tint = { r = 0.72, g = 0.21, b = 0 }
 	spawner.attack_parameters.cooldown = 25
 	data:extend({spawner})
 
-	spawner = table.deepcopy(data.raw['unit']['big-biter'])
+	spawner = table.deepcopy(spawner)
 	spawner.name = "zadv-big-beast"
 	spawner.corpse = "zadv-big-beast-corpse"
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable", "not-flammable"}
 	spawner.max_health = 1350
 	spawner.healing_per_tick = 0.04
 	spawner.vision_distance = 45
-	spawner.run_animation = table.deepcopy(data.raw.player.player.animations[2].running)
-	spawner.attack_parameters.animation = table.deepcopy(data.raw.player.player.animations[2].mining_with_tool)
+	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][2].running)
+	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][2].mining_with_tool)
 	for i=1,5 do
 		if i==1 then c={ r = 0.3, g = 0.3, b = 0.3}
 		elseif i==2 then c={r = 0.3, g = 0.3, b = 0.0}
@@ -297,7 +299,7 @@ do -- base
 	spawner.attack_parameters.cooldown = 25
 	data:extend({spawner})
 
-	spawner = table.deepcopy(data.raw['unit']['behemoth-biter'])
+	spawner = table.deepcopy(spawner)
 	spawner.name = "zadv-behemoth-beast"
 	spawner.corpse = "zadv-behemoth-beast-corpse"
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-flammable"}
@@ -306,8 +308,8 @@ do -- base
 	spawner.vision_distance = 65
 	spawner.min_pursue_time = 1200
 	spawner.max_pursue_distance = 120
-	spawner.run_animation = table.deepcopy(data.raw.player.player.animations[3].running)
-	spawner.attack_parameters.animation = table.deepcopy(data.raw.player.player.animations[3].mining_with_tool)
+	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][3].running)
+	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][3].mining_with_tool)
 	for i=1,5 do
 		if i==1 then c={ r = 0.9, g = 0.9, b = 0.9}
 		elseif i==2 then c={r = 0.1, g = 0.75, b = 0.21}
@@ -335,39 +337,38 @@ do -- base
 	spawner.attack_parameters.cooldown = 25
 	data:extend({spawner})
 
-
-	spawner = table.deepcopy(data.raw['unit']['medium-spitter'])
+	spawner = table.deepcopy(spawner)
 	spawner.name = "zadv-medium-zombie"
 	spawner.corpse = "zadv-medium-zombie-corpse"
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable", "not-flammable"}
 	spawner.max_health = 750
 	spawner.healing_per_tick = 0.04
 	spawner.vision_distance = 65
-	spawner.run_animation = table.deepcopy(data.raw.player.player.animations[1].running)
-	spawner.attack_parameters.animation = table.deepcopy(data.raw.player.player.animations[1].idle_with_gun)
+	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][1].running)
+	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][1].idle_with_gun)
 	spawner.run_animation.layers[2].tint = { r = 0.32, g = 0.41, b = 0 }
 	spawner.run_animation.layers[2].hr_version.tint = { r = 0.32, g = 0.41, b = 0 }
 	spawner.attack_parameters.animation.layers[2].tint = { r = 0.32, g = 0.41, b = 0 }
 	spawner.attack_parameters.animation.layers[2].hr_version.tint = { r = 0.32, g = 0.41, b = 0 }
-	spawner.attack_parameters.ammo_type = table.deepcopy(data.raw.ammo['piercing-rounds-magazine'].ammo_type)
+	spawner.attack_parameters.ammo_type = table.deepcopy(ZADV.backup['piercing-rounds-magazine'].ammo_type)
 	spawner.attack_parameters.ammo_type.action.action_delivery.target_effects[2].damage.amount = 16
-	spawner.attack_parameters.shell_particle = table.deepcopy(data.raw.gun['submachine-gun'].attack_parameters.shell_particle)
+	spawner.attack_parameters.shell_particle = table.deepcopy(ZADV.backup['submachine-gun'].attack_parameters.shell_particle)
 	spawner.attack_parameters.projectile_creation_distance = 1.125
 	spawner.attack_parameters.ammo_category = "bullet"
+	spawner.attack_parameters.range=12
 	spawner.attack_parameters.warmup = 2
 	spawner.attack_parameters.cooldown = 6
 	data:extend({spawner})
 
-
-	spawner = table.deepcopy(data.raw['unit']['big-spitter'])
+	spawner = table.deepcopy(spawner)
 	spawner.name = "zadv-big-zombie"
 	spawner.corpse = "zadv-big-zombie-corpse"
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable", "not-flammable"}
 	spawner.max_health = 2250
 	spawner.healing_per_tick = 0.04
 	spawner.vision_distance = 45
-	spawner.run_animation = table.deepcopy(data.raw.player.player.animations[2].running)
-	spawner.attack_parameters.animation = table.deepcopy(data.raw.player.player.animations[2].idle_with_gun)
+	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][2].running)
+	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][2].idle_with_gun)
 	for i=1,5 do
 		if i==1 then c={ r = 0.3, g = 0.3, b = 0.3}
 		elseif i==2 then c={ r = 0.45, g = 0.45, b = 0.45}
@@ -391,17 +392,17 @@ do -- base
 		spawner.attack_parameters.animation.layers[i].shift[2] = spawner.attack_parameters.animation.layers[i].shift[2]*s1
 		spawner.attack_parameters.animation.layers[i].hr_version.shift[2] = spawner.attack_parameters.animation.layers[i].hr_version.shift[2]*s1
 	end
-	spawner.attack_parameters.ammo_type = table.deepcopy(data.raw.ammo['cannon-shell'].ammo_type)
-	spawner.attack_parameters.shell_particle = table.deepcopy(data.raw.gun['tank-machine-gun'].attack_parameters.shell_particle)
+	spawner.attack_parameters.ammo_type = table.deepcopy(ZADV.backup['cannon-shell'].ammo_type)
+	spawner.attack_parameters.shell_particle = table.deepcopy(ZADV.backup['tank-machine-gun'].attack_parameters.shell_particle)
 	spawner.attack_parameters.projectile_creation_distance = 1.6
 	spawner.attack_parameters.projectile_center = {-0.15625, -0.07812}
 	spawner.attack_parameters.ammo_category = "cannon-shell"
+	spawner.attack_parameters.range=16
 	spawner.attack_parameters.warmup = 6
 	spawner.attack_parameters.cooldown = 12
 	data:extend({spawner})
 
-
-	spawner = table.deepcopy(data.raw['unit']['zadv-big-zombie'])
+	spawner = table.deepcopy(spawner)
 	spawner.name = "zadv-flame-zombie"
 	spawner.corpse = "zadv-flame-zombie-corpse"
 	for i=1,5 do
@@ -416,9 +417,10 @@ do -- base
 			spawner.attack_parameters.animation.layers[i].hr_version.tint = c
 		end
 	end
-	spawner.attack_parameters.ammo_type = table.deepcopy(data.raw.ammo['flamethrower-ammo'].ammo_type[1])
-	spawner.attack_parameters.cyclic_sound = table.deepcopy(data.raw.gun['flamethrower'].attack_parameters.cyclic_sound)
+	spawner.attack_parameters.ammo_type = table.deepcopy(ZADV.backup['flamethrower-ammo'] .ammo_type[1])
+	spawner.attack_parameters.cyclic_sound = table.deepcopy(ZADV.backup['flamethrower'].attack_parameters.cyclic_sound)
 	spawner.attack_parameters.projectile_creation_distance = 0.6
+	spawner.attack_parameters.shell_particle = nil
 	spawner.attack_parameters.range = 15
 	spawner.attack_parameters.min_range = 5
 	spawner.attack_parameters.ammo_category = "flamethrower"
@@ -427,14 +429,14 @@ do -- base
 	data:extend({spawner})
 
 
-	spawner = table.deepcopy(data.raw['unit']['behemoth-spitter'])
+	spawner = table.deepcopy(ZADV.backup['behemoth-biter'])
 	spawner.name = "zadv-behemoth-zombie"
 	spawner.corpse = "zadv-behemoth-zombie-corpse"
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-flammable"}
 	spawner.max_health = 9500
 	spawner.healing_per_tick = 0.04
-	spawner.run_animation = table.deepcopy(data.raw.player.player.animations[3].running)
-	spawner.attack_parameters.animation = table.deepcopy(data.raw.player.player.animations[3].idle_with_gun)
+	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][3].running)
+	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][3].idle_with_gun)
 	for i=1,5 do
 		if i==1 then c={ r = 0.9, g = 0.9, b = 0.9}
 		elseif i==2 then c={r = 0.75, g = 0.21, b = 0.1}
@@ -460,11 +462,12 @@ do -- base
 		spawner.attack_parameters.animation.layers[i].hr_version.shift[2] = spawner.attack_parameters.animation.layers[i].hr_version.shift[2]*s2
 	end
 	spawner.attack_parameters.damage_modifier = 4
+	spawner.attack_parameters.range=20
 	data:extend({spawner})
 	
 	
 	local optimal_tier = 21
-	spawner = table.deepcopy(data.raw['unit-spawner']['biter-spawner'])
+	spawner = table.deepcopy(ZADV.backup['biter-spawner'])
 	spawner.name = "zadv-beast-spawner"
 	spawner.flags = {"placeable-neutral", "not-flammable"}
 	spawner.max_health = 2350
@@ -480,7 +483,7 @@ do -- base
 	data:extend({spawner})
 	
 	optimal_tier = 23.6
-	spawner = table.deepcopy(data.raw['unit-spawner']['spitter-spawner'])
+	spawner = table.deepcopy(ZADV.backup['spitter-spawner'])
 	spawner.name = "zadv-zombie-spawner"
 	spawner.flags = {"placeable-neutral", "not-flammable"}
 	spawner.max_health = 2350
@@ -497,7 +500,7 @@ do -- base
 	data:extend({spawner})
 	
 
-	spawner = table.deepcopy(data.raw['roboport']['roboport'])
+	spawner = table.deepcopy(ZADV.backup['roboport'])
 	spawner.name = "zadv-roboport"
 	spawner.flags = {"not-flammable"}
 	spawner.minable = nil
@@ -529,7 +532,7 @@ do -- base
 	data:extend({spawner})
 end
 do -- race
-	local racedata = table.deepcopy(data.raw['wall']['stone-wall'])
+	local racedata = table.deepcopy(ZADV.backup['wall-stone-wall'])
 	racedata.name = "zadv-race-cone"
 	racedata.icon = "__ZAdventure__/graphics/icons/race_cone.png"
 	racedata.icon_size = 32
@@ -632,7 +635,7 @@ do -- race
 	racedata.default_output_signal = nil
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw.item['stone-wall'])
+	racedata = table.deepcopy(ZADV.backup['item-stone-wall'])
 	racedata.name = "zadv-race-cone"
 	racedata.icon = "__ZAdventure__/graphics/icons/race_cone.png"
 	racedata.icon_size = 32
@@ -641,7 +644,7 @@ do -- race
 	data:extend({racedata})
 
 
-	racedata = table.deepcopy(data.raw['car']['car'])
+	racedata = table.deepcopy(ZADV.backup['car'])
 	racedata.name = "zadv-race-car-yellow"
 	racedata.minable = nil
 	racedata.operable = nil
@@ -707,7 +710,7 @@ do -- race
 	data:extend({racedata})
 
 
-	racedata = table.deepcopy(data.raw['item-with-entity-data']['car'])
+	racedata = table.deepcopy(ZADV.backup['item-car'])
 	racedata.name = "zadv-race-car-yellow"
 	racedata.icon = "__ZAdventure__/graphics/icons/car-yellow.png"
 	racedata.flags = {"hidden"}
@@ -727,7 +730,7 @@ do -- race
 	data:extend({racedata})
 
 
-	racedata = table.deepcopy(data.raw['transport-belt']['transport-belt'])
+	racedata = table.deepcopy(ZADV.backup['ent-transport-belt'])
 	racedata.name = "zadv-race-belt-1"
 	racedata.minable = nil
 	racedata.mined_sound = nil
@@ -738,7 +741,7 @@ do -- race
 	racedata.layer = 1
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw['transport-belt']['express-transport-belt'])
+	racedata = table.deepcopy(ZADV.backup['ent-express-transport-belt'])
 	racedata.name = "zadv-race-belt-2"
 	racedata.minable = nil
 	racedata.mined_sound = nil
@@ -749,7 +752,7 @@ do -- race
 	racedata.layer = 1
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw['transport-belt']['fast-transport-belt'])
+	racedata = table.deepcopy(ZADV.backup['ent-fast-transport-belt'])
 	racedata.name = "zadv-race-belt-3"
 	racedata.flags = {}
 	racedata.minable = nil
@@ -761,23 +764,23 @@ do -- race
 	racedata.layer = 1
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw.item['transport-belt'])
+	racedata = table.deepcopy(ZADV.backup['item-transport-belt'])
 	racedata.name = "zadv-race-belt-1"
 	racedata.flags = {'hidden'}
 	racedata.place_result = racedata.name
 	data:extend({racedata})
-	racedata = table.deepcopy(data.raw.item['fast-transport-belt'])
+	racedata = table.deepcopy(ZADV.backup['item-fast-transport-belt'])
 	racedata.name = "zadv-race-belt-2"
 	racedata.flags = {'hidden'}
 	racedata.place_result = racedata.name
 	data:extend({racedata})
-	racedata = table.deepcopy(data.raw.item['express-transport-belt'])
+	racedata = table.deepcopy(ZADV.backup['item-express-transport-belt'])
 	racedata.name = "zadv-race-belt-3"
 	racedata.flags = {'hidden'}
 	racedata.place_result = racedata.name
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw['container']['iron-chest'])
+	racedata = table.deepcopy(ZADV.backup['iron-chest'])
 	racedata.name = "zadv-race-trophy"
 	racedata.icon = "__ZAdventure__/graphics/icons/trophy.png"
 	racedata.flags = {}
@@ -796,14 +799,14 @@ do -- race
 	racedata.circuit_wire_max_distance = nil
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw.item['coin'])
+	racedata = table.deepcopy(ZADV.backup['coin'])
 	racedata.name = "zadv_coin"
 	racedata.icon = "__ZAdventure__/graphics/icons/coin.png"
 	racedata.flags = {}
 	racedata.icon_size = 64
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw.tile['concrete'])
+	racedata = table.deepcopy(ZADV.backup['concrete'])
 	racedata.name = "zadv_race_tile"
 	racedata.minable = nil
 	racedata.mined_sound = nil
@@ -831,7 +834,7 @@ do -- race
 	racedata.variants.material_background.hr_version.picture = "__ZAdventure__/graphics/terrain/hr-asphalt.png"
 	data:extend({racedata})
 
-	racedata = table.deepcopy(data.raw.item['stone-brick'])
+	racedata = table.deepcopy(ZADV.backup['stone-brick'])
 	racedata.name = "zadv_race_tile"
 	racedata.stack_size = 9999
 	racedata.flags = {'hidden'}
@@ -1367,7 +1370,7 @@ do -- race
 	}
 end
 do -- danger chest
-	local warnmine = table.deepcopy(data.raw['simple-entity-with-force']['simple-entity-with-force'])
+	local warnmine = table.deepcopy(ZADV.backup['simple-entity-with-force'])
 	warnmine.name = "zadv-land-mine-warn"
 	warnmine.icon = "__ZAdventure__/graphics/icons/warmines.png"
 	warnmine.flags = {}
