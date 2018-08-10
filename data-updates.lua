@@ -417,7 +417,22 @@ do -- base
 			spawner.attack_parameters.animation.layers[i].hr_version.tint = c
 		end
 	end
-	spawner.attack_parameters.ammo_type = table.deepcopy(ZADV.backup['flamethrower-ammo'] .ammo_type[1])
+	--spawner.attack_parameters.ammo_type = table.deepcopy(ZADV.backup['flamethrower-ammo'].ammo_type[1])
+	spawner.attack_parameters.ammo_type = {
+		source_type = "default",
+		category = "flamethrower",
+		target_type = "position",
+		clamp_position = true,
+		action = {
+			type = "direct",
+			action_delivery = {
+				type = "stream",
+				stream = "handheld-flamethrower-fire-stream",
+				max_length = 15,
+				duration = 160
+			}
+		}
+	}
 	spawner.attack_parameters.cyclic_sound = table.deepcopy(ZADV.backup['flamethrower'].attack_parameters.cyclic_sound)
 	spawner.attack_parameters.projectile_creation_distance = 0.6
 	spawner.attack_parameters.shell_particle = nil
