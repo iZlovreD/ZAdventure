@@ -110,7 +110,7 @@ if not skiparea[modname..bpname] then
 				local ret = ""
 				if type(value) == _type then ret = value else ret = default end
 				if ret ~= 'neutral' and ret ~= 'enemy' and ret ~= 'player' then
-					ret = "ZADV_" .. modname .."_".. ret
+					ret = "ZADV_" .. ret
 				end
 				ZADV.ControlString = ZADV.ControlString .. tostring(ret)
 				return ret
