@@ -458,7 +458,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		--debug('a:%s  s:%s',base(area[1][1])-base(area[2][1]),newarea.area.size.x)
 		
 		-- remove rocks and cliffs
-		for _,r in pairs(surface.find_entities_filtered{area=area, type={"simple-entity", "cliff"}}) do
+		for _,r in pairs(surface.find_entities_filtered{area=Area.expand(area,1.5), type={"simple-entity", "cliff"}}) do
 			if r and r.valid then r.die('neutral') end
 			if r and r.valid then r.destroy() end
 		end

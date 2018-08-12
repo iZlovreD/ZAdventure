@@ -173,6 +173,7 @@ do -- base
 	local spawner = table.deepcopy(ZADV.backup['medium-biter-corpse'])
 	spawner.name = "zadv-medium-beast-corpse"
     spawner.selection_box = nil
+    spawner.time_before_removed = 3600
     spawner.flags = {"placeable-off-grid", "not-on-map"}
 	spawner.animation.layers[1].width = 114
 	spawner.animation.layers[1].height = 112
