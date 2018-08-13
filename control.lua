@@ -193,6 +193,20 @@ local function FindNearestPlayer(pos)
 	return game.connected_players[indx] or false
 end
 
+--- Force create entity
+-- @param array data
+function ForceCreateEntity(surface, name, pos, force, dir)
+	
+	local atempts = math.min(15, math.max(3, game.speed * 3))
+	
+	for i=1,atempts do
+		for _,e in pairs(surface.find_entities_filtered{area=Position.expand_to_area(pos, 0.2)}) do e.destroy() end
+		local ent = surface.create_entity{name=name, position=pos, force=force, direction=dir}
+		if ent and ent.valid then return ent end
+	end
+	
+end
+
 --- Randomize and prepare new area
 -- @param seed : center of new chunk
 -- @return table area data
@@ -340,10 +354,21 @@ local function GetRandomArea(pos, surface)
 	
 	end
 	
+	local newpos = table.deepcopy(pos)
+	local offset_x, offset_y
+	if ZADV.Data[a][b].area.size.x < 30 then
+		offset_x = math.floor((Rnd(1,1000,seed) % (30 - ZADV.Data[a][b].area.size.x)) * (Rnd(1,1000,seed) > 500 and 1 or -1) / 2)
+		newpos = Position.offset(newpos, offset_x, 0)
+	end
+	if ZADV.Data[a][b].area.size.y < 30 then
+		offset_y = math.floor((Rnd(1,1000,seed) % (30 - ZADV.Data[a][b].area.size.y)) * (Rnd(1,1000,seed) > 500 and 1 or -1) / 2)
+		newpos = Position.offset(newpos, 0, offset_y)
+	end
+	
 	-- calculate new area box
 	ZADV.Data[a][b].workarea = {
-		{pos.x-(ZADV.Data[a][b].area.size.x/2), pos.y-(ZADV.Data[a][b].area.size.y/2)},
-		{pos.x+(ZADV.Data[a][b].area.size.x/2), pos.y+(ZADV.Data[a][b].area.size.y/2)}
+		{newpos.x-(ZADV.Data[a][b].area.size.x/2), newpos.y-(ZADV.Data[a][b].area.size.y/2)},
+		{newpos.x+(ZADV.Data[a][b].area.size.x/2), newpos.y+(ZADV.Data[a][b].area.size.y/2)}
 	}
 		
 	-- re-check collisions
@@ -389,7 +414,7 @@ local function GetRandomArea(pos, surface)
 	
 	-- save last position
 	ZADV.Data[a][b].copies = ZADV.Data[a][b].copies or {}
-	table.insert(ZADV.Data[a][b].copies, pos)
+	table.insert(ZADV.Data[a][b].copies, newpos)
 	
 	-- if only once or no more copiees
 	if ZADV.Data[a][b].only_once or copy_left then
@@ -403,7 +428,7 @@ local function GetRandomArea(pos, surface)
 	end
 	
 	-- return area
-	return ZADV.Data[a][b]
+	return ZADV.Data[a][b], newpos
 	
 end
 
@@ -450,15 +475,15 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		local c = math.ceil
 		local area = {
-			{ c(center.x)-(newarea.area.size.x/2), c(center.y)-(newarea.area.size.y/2) },
-			{ c(center.x)+(newarea.area.size.x/2), c(center.y)+(newarea.area.size.y/2) }
+			{ c(center.x)-(newarea.area.size.x/2)-1, c(center.y)-(newarea.area.size.y/2)-1 },
+			{ c(center.x)+(newarea.area.size.x/2)+1, c(center.y)+(newarea.area.size.y/2)+1 }
 		}
 		local _center = Area.center(area)
 		
 		--debug('a:%s  s:%s',base(area[1][1])-base(area[2][1]),newarea.area.size.x)
 		
 		-- remove rocks and cliffs
-		for _,r in pairs(surface.find_entities_filtered{area=Area.expand(area,1.5), type={"simple-entity", "cliff"}}) do
+		for _,r in pairs(surface.find_entities_filtered{area=Area.expand(area,1), type={"cliff"}}) do --"simple-entity"
 			if r and r.valid then r.die('neutral') end
 			if r and r.valid then r.destroy() end
 		end
@@ -480,10 +505,13 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		area2d.right_bottom.x = area2d.right_bottom.x - 1
 		area2d.right_bottom.y = area2d.right_bottom.y - 1
 		
+		-- local storage
+		local locstore = {}
+		
 		-- prepare areadata
 		global.ZADV.ArData = global.ZADV.ArData or {}
 		local areadata = table.deepcopy(newarea.areadata) or {}
-
+		
 		local entities = {}
 		if newarea.finalize_build then					-- modded
 			for k,v in pairs(ghosts) do
@@ -503,9 +531,6 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					area=area,
 					name=newarea.names
 				}
-				
-				-- local storage
-				local locstor = {}
 				
 				-- update used types list
 				global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
@@ -548,13 +573,13 @@ local function AplyBlueprintAuto(surface, center, newarea)
 					-- Script for each entity in new area
 					if type(newarea.ScriptForEach) == 'function' then
 					
-						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstor, areadata)
+						local done, err = pcall(newarea.ScriptForEach, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstore, areadata)
 						if not done then
 							local str = string.format("\n[%s].ScriptForEach error::\n\t%s\n", newarea.name, err:gsub('function ',''))
 							if not ZADV.errors[newarea.name ..'ScriptForEach'] then
 								local _d = ZADV.debug
 								ZADV.debug = _d >= 1 and _d or 1
-								ZADV.errors[dname ..'_'.. event.name] = str
+								ZADV.errors[newarea.name ..'ScriptForEach'] = str
 								game.print(str)
 								ZADV.debug = _d
 								debug(str)
@@ -573,7 +598,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
 							end))()
-							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstor, areadata)
+							done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstore, areadata)
 							if not done then
 								if not ZADV.errors[newarea.name ..'ScriptForEach [[DEBUG]]'] then
 									debug("\n[[DEBUG]]\n[%s].ScriptForEach error::\n\t%s\n", newarea.name, err:gsub('function ',''))
@@ -593,13 +618,13 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		-- Script for all entities in new area
 		if type(newarea.ScriptForAll) == 'function' then
 		
-			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata)
+			local done, err = pcall(newarea.ScriptForAll, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata, locstore)
 			if not done then
 				local str = string.format("\n[%s].ScriptForAll error::\n\t%s\n", newarea.name, err:gsub('function ',''))
 				if not ZADV.errors[newarea.name ..'_ScriptForAll'] then
 					local _d = ZADV.debug
 					ZADV.debug = _d >= 1 and _d or 1
-					ZADV.errors[dname ..'_'.. event.name] = str
+					ZADV.errors[newarea.name ..'_ScriptForAll'] = str
 					game.print(str)
 					ZADV.debug = _d
 					debug(str)
@@ -607,7 +632,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 			end
 			
 			if ZADV.debug >= 2 and newarea.name:find('TEST') then
-				local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+				local _testfunc = loadstring(serpd(function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 -------------------------------------------------------------------------------------------------------------------------------------------
 ----v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v-v----
 --[[-----------------------------------------------------------------------------------------------------------------------------------]]--
@@ -618,7 +643,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
 				end))()
-				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata)
+				done, err = pcall(_testfunc, Rnd(1,1000), game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata, locstore)
 				if not done then
 					if not ZADV.errors[newarea.name ..'_ScriptForAll [[DEBUG]]'] then
 						debug("\n[[DEBUG]]\n[%s].ScriptForAll error::\n\t%s\n", newarea.name, err:gsub('function ',''))
@@ -690,7 +715,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		
 		
 		-- erase blueprint
-		global.ZADV.blueprint.clear()
+		global.ZADV.blueprint.clear_blueprint()
 	
 	end
 end
@@ -754,14 +779,14 @@ local function GenerateArea( event )
 	end
 	
 	-- get random area
-	local newarea = GetRandomArea(position, event.surface)
+	local newarea, newposition = GetRandomArea(position, event.surface)
 	
 	-- if we get one...
 	if newarea then
 		
 		-- let's build it
 		newarea.workarea = event.area
-		AplyBlueprintAuto(event.surface, position, newarea)
+		AplyBlueprintAuto(event.surface, newposition, newarea)
 		
 		if global.ZADV.restrictedareas[newarea.name ..'-'.. newarea.current_force] then
 			newarea.bp = nil
@@ -1111,5 +1136,6 @@ remote.add_interface("ZADV", {
 			ZADV.dinfo['info'].caption = string.format('Player:\nx = %.2f\ny = %.2f\nChunk:\nx = %.2f\ny = %.2f\nDistance: %.2f',pos.x, pos.y, chnk.x, chnk.y, Position.distance(pos, {x=0,y=0}))
 		end)
 	end,
+
 })
 

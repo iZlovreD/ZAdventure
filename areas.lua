@@ -37,7 +37,7 @@ ret.area['template'] = {
 	
 	,ScriptForEach = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, areadata) end
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata) end
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore) end
 	
 	,Events = {
 	
@@ -454,7 +454,7 @@ ret.area['danger chest'] = {
 	end
 	
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		areadata.area = area
 		areadata.surface = surface
@@ -625,7 +625,7 @@ ret.area['maze variant_1'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -809,7 +809,7 @@ ret.area['maze variant_2'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -993,7 +993,7 @@ ret.area['maze variant_3'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -1177,7 +1177,7 @@ ret.area['maze variant_4'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -1361,7 +1361,7 @@ ret.area['maze variant_5'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -1545,7 +1545,7 @@ ret.area['maze variant_6'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -1729,7 +1729,7 @@ ret.area['maze variant_7'] = {
 		
 	end
 
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 	
 		areadata.prize = {}
 		areadata.pos = center
@@ -2021,6 +2021,7 @@ ret.area['random bp'] = {
 			areadata = nil
 			entity.get_inventory(defines.inventory.chest).insert({ name='blueprint', count=1 })
 			entity.get_inventory(defines.inventory.chest).find_item_stack('blueprint').import_stack(bp)
+			surface.create_entity{name = "rock-big", position = entity.position, force = 'neutral'}
 			
 		end
 	end
@@ -2044,23 +2045,16 @@ ret.area['occupied base'] = {
 		
 	,ScriptForEach = function(rndroll, game, surface, force, area, center, entity, namelist, locstore, areadata)
 		
-		locstore.zombie = locstore.zombie or "zadv-medium-zombie"
-		locstore.spawner = locstore.spawner or "zadv-beast-spawner"
-		
 		if entity.valid then
 			if entity.prototype.name == "wooden-chest" then
-				local pos = entity.position
+				locstore.posa = locstore.posa or {}
+				table.insert(locstore.posa, entity.position)
 				entity.destroy()
-				locstore.zombie = locstore.zombie == "zadv-big-zombie" and "zadv-medium-zombie" or "zadv-big-zombie"
-				surface.create_entity{name=locstore.zombie, position=pos, force=force}
 				
 			elseif entity.prototype.name == "iron-chest" then
-				local pos = entity.position
-				for _,ent in pairs(surface.find_entities_filtered{area=Position.expand_to_area(pos, 2)}) do
-					ent.destroy()
-				end
-				locstore.spawner = locstore.spawner == "zadv-zombie-spawner" and "zadv-beast-spawner" or "zadv-zombie-spawner"
-				surface.create_entity{name=locstore.spawner, position=pos, force=force}
+				locstore.posb = locstore.posb or {}
+				table.insert(locstore.posb, entity.position)
+				entity.destroy()
 				
 			elseif entity.prototype.name == "logistic-chest-storage" then
 				entity.get_inventory(defines.inventory.chest).insert({name="piercing-rounds-magazine", count=1000})
@@ -2069,24 +2063,40 @@ ret.area['occupied base'] = {
 				entity.fluidbox[1] = { name = "heavy-oil", amount = 25000 }
 				
 			elseif entity.prototype.name == "roboport" then
-				local ent = surface.create_entity{name='zadv-roboport', position=entity.position, force=force}
-				ent.get_inventory(defines.inventory.roboport_robot).insert({name="logistic-robot", count=50})
-				ent.get_inventory(defines.inventory.roboport_robot).insert({name="construction-robot", count=50})
-				ent.get_inventory(defines.inventory.roboport_material).insert({name="repair-pack", count=500})
-				areadata.robopos = entity.position
-				local ent = surface.create_entity{name="hidden-electric-energy-interface", position=areadata.robopos, force=force}
-				ent.electric_buffer_size = 108283
-				ent.power_production = 108283
-				ent.power_usage = 100000
+				locstore.posc = entity.position
 				entity.destroy()
-				
 				
 			end
 		end
 		
 	end
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
+		
+		for _,e in pairs(surface.find_entities_filtered{area=Area.expand(area,5), name={"wooden-chest","iron-chest","roboport"}}) do e.destroy() end
+		
+		locstore.zombie = locstore.zombie or "zadv-medium-zombie"
+		locstore.spawner = locstore.spawner or "zadv-beast-spawner"
+		
+		for _,pos in pairs(locstore.posa) do
+			locstore.zombie = locstore.zombie == "zadv-big-zombie" and "zadv-medium-zombie" or "zadv-big-zombie"
+			ForceCreateEntity(surface, locstore.zombie, pos, force)
+		end
+		for _,pos in pairs(locstore.posb) do
+			locstore.spawner = locstore.spawner == "zadv-zombie-spawner" and "zadv-beast-spawner" or "zadv-zombie-spawner"
+			ForceCreateEntity(surface, locstore.spawner, pos, force)
+		end
+		
+		local ent = ForceCreateEntity(surface, 'zadv-roboport', locstore.posc, force)
+		ent.get_inventory(defines.inventory.roboport_robot).insert({name="logistic-robot", count=50})
+		ent.get_inventory(defines.inventory.roboport_robot).insert({name="construction-robot", count=50})
+		ent.get_inventory(defines.inventory.roboport_material).insert({name="repair-pack", count=500})
+		areadata.robopos = entity.position
+		local ent = ForceCreateEntity(surface, 'hidden-electric-energy-interface', locstore.posc, force)
+		ent.electric_buffer_size = 108283
+		ent.power_production = 108283
+		ent.power_usage = 100000
+		
 		
 		areadata.force = force
 		areadata.surface = surface
@@ -2103,15 +2113,6 @@ ret.area['occupied base'] = {
 		game.forces[force].worker_robots_battery_modifier = 100
 		game.forces[force].worker_robots_speed_modifier = 50
 		game.forces[force].worker_robots_storage_bonus = 5
-		
-		local spawner = "zadv-beast-spawner"
-		for _,e in pairs(surface.find_entities_filtered{area=Area.expand(area,5), name='iron-chest'}) do
-			if e and e.valid then
-				local pos = e.position
-				spawner = spawner == "zadv-zombie-spawner" and "zadv-beast-spawner" or "zadv-zombie-spawner"
-				surface.create_entity{name=spawner, position=pos, force=force}
-			end
-		end
 		
 	end
 
@@ -2199,7 +2200,7 @@ ret.area['free recipe'] = {
 		}
 	}
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		for _,ent in pairs(entitylist) do
 			areadata.center = ent.position
@@ -2268,7 +2269,7 @@ ret.area['free technology'] = {
 	,nearest_copy = 20
 	,progressive_remoteness = 5
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		for _,ent in pairs(entitylist) do
 			areadata.center = ent.position
@@ -2404,7 +2405,7 @@ ret.area['inventive station'] = {
 		
 	end
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		areadata.area = area
 		areadata.force = force
@@ -2972,7 +2973,7 @@ ret.area['exchange post'] = {
 		
 	end
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		areadata.surface = surface
 		areadata.force = force
@@ -3078,7 +3079,7 @@ ret.area['exchange post'] = {
 				
 				if global.ZADV and global.ZADV.blueprint then
 						
-					global.ZADV.blueprint.clear()
+					global.ZADV.blueprint.clear_blueprint()
 					global.ZADV.blueprint.import_stack(ad.inner_bp)
 					if global.ZADV.blueprint.is_blueprint_setup() then
 						
@@ -3151,7 +3152,7 @@ ret.area['exchange post'] = {
 						
 					else
 						ad.disabled = true
-						global.ZADV.blueprint.clear()
+						global.ZADV.blueprint.clear_blueprint()
 					end
 					
 				end
@@ -3163,7 +3164,7 @@ ret.area['exchange post'] = {
 			
 				if global.ZADV and global.ZADV.blueprint then
 						
-					global.ZADV.blueprint.clear()
+					global.ZADV.blueprint.clear_blueprint()
 					global.ZADV.blueprint.import_stack(ad.outer_bp)
 					if global.ZADV.blueprint.is_blueprint_setup() then
 						
@@ -3189,7 +3190,7 @@ ret.area['exchange post'] = {
 						
 					else
 						ad.disabled = true
-						global.ZADV.blueprint.clear()
+						global.ZADV.blueprint.clear_blueprint()
 					end
 					
 				end
@@ -3549,7 +3550,7 @@ ret.area['Autodrome'] = {
 		}
 	}
 	
-	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata)
+	,ScriptForAll = function(rndroll, game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		areadata.area = Area.to_table(area)
 		areadata.force = force
@@ -3564,7 +3565,7 @@ ret.area['Autodrome'] = {
 		areadata.build.pos = {x=center.x-80,y=center.y-47}
 		areadata.build.f = function(surface, force, bp, pos)
 			
-			global.ZADV.blueprint.clear()
+			global.ZADV.blueprint.clear_blueprint()
 			global.ZADV.blueprint.import_stack(bp)
 			if global.ZADV.blueprint.is_blueprint_setup() then
 				
@@ -4474,6 +4475,7 @@ ret.area['Autodrome'] = {
 	
 }
 end
+
 
 
 return ret

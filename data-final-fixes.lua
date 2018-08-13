@@ -26,7 +26,7 @@ local delete = {}
 local replace_data = {}
 local counter = 0
 local replaced = 0
-local total = ' %s Areas in total.%s'
+local total = ' Areas in total: %s%s'
 
 ZADV.ControlString = ""
 
@@ -48,7 +48,7 @@ for bpname,bpdata in pairs(list) do
 		ZADV.Data[modname][bpname] = nil
 		skiparea[modname..bpname] = true
 		replaced = replaced+1
-		total = ' %s Areas in total, %s has been updated.'
+		total = ' Areas in total: %s (%s updated)'
 		
 	end
 
@@ -180,6 +180,7 @@ if not skiparea[modname..bpname] then
 end end end
 
 -- last preparations
+local dsize = ZADV.ControlString:gsub("[_- ]",''):len()
 ZADV.ControlString = md5.sumhexa(ZADV.ControlString:gsub("[_- ]",''))
 for _,com in pairs(delete) do local _=loadstring(com); _() end
 
@@ -194,10 +195,12 @@ local schunks = math.floor(#sdump / 199) + 1
 local ndump = serpent.dump(ZADV.NamePairList)
 local nchunks = math.floor(#ndump / 199) + 1
 
-debug(0,'-------------------------------------')
+debug(0,'----------------------------------------')
 debug(0, total, counter, replaced>0 and replaced or "")
-debug(1,' Data split on %s pices', chunks+schunks+nchunks)
-debug(0,'-------------------------------------')
+debug(0,' Data size: %.3f Kb', dsize/1024)
+debug(0,' Data chunks: %s', chunks+schunks+nchunks)
+debug(0,' Hash: %s', ZADV.ControlString)
+debug(0,'----------------------------------------')
 debug(1,ZADV)
 
 	-- remember number of chunks

@@ -31,7 +31,7 @@ ZADV.Settings['zadv_disable_in_pvp'] = settings.startup["zadv_disable_in_pvp"].v
 
 
 local areas = require 'areas' or {}
-debug(2, "Requesting [%s] areas", areas.ModName)
+debug(1, "Requesting [%s] areas", areas.ModName)
 ZADV.Data[areas.ModName] = ZADV.Data[areas.ModName] or {}
 for name,area in pairs(areas.area) do if area.bp:len() > 0 then
 	ZADV.Data[areas.ModName][name] = area
