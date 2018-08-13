@@ -189,7 +189,7 @@ do -- base
 		}
 	}
 		spawner.animation.layers[2] = table.deepcopy(spawner.animation.layers[1])
-		spawner.animation.layers[2].tint = { r = 0.72, g = 0.41, b = 0 }
+		spawner.animation.layers[2].tint = { r = 0.72, g = 0.21, b = 0 }
         spawner.animation.layers[2].stripes = nil
         spawner.animation.layers[2].flags = { "mask" }
 		spawner.animation.layers[2].filename = "__ZAdventure__/graphics/entity/player/hr-level1_dead_mask.png"
@@ -255,7 +255,8 @@ do -- base
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable", "not-flammable"}
 	spawner.max_health = 350
 	spawner.healing_per_tick = 0.04
-	spawner.movement_speed = 0.225
+	spawner.movement_speed = 0.3
+	spawner.distance_per_frame = 0.2
 	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][1].running)
 	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][1].mining_with_tool)
 	spawner.run_animation.layers[2].tint = { r = 0.72, g = 0.21, b = 0 }

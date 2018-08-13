@@ -2091,7 +2091,7 @@ ret.area['occupied base'] = {
 		ent.get_inventory(defines.inventory.roboport_robot).insert({name="logistic-robot", count=50})
 		ent.get_inventory(defines.inventory.roboport_robot).insert({name="construction-robot", count=50})
 		ent.get_inventory(defines.inventory.roboport_material).insert({name="repair-pack", count=500})
-		areadata.robopos = entity.position
+		areadata.robopos = ent.position
 		local ent = ForceCreateEntity(surface, 'hidden-electric-energy-interface', locstore.posc, force)
 		ent.electric_buffer_size = 108283
 		ent.power_production = 108283
