@@ -3251,7 +3251,7 @@ ret.area['Autodrome'] = {
 					
 				end
 				
-				if ad.race_start_time and ad.prestart_step and race_time > 60 then
+				if ad.race_start_time and ad.prestart_step and race_time.total > 60 then
 					ad.gui[ad.player_in_car]['info_1'].style = 'zadv_lable_race_info'
 					ad.gui[ad.player_in_car]['info_1'].caption = 'Lap time:'
 					ad.gui[ad.player_in_car]['info_2'].style = 'zadv_lable_race_info_white'
