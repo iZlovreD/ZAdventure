@@ -768,7 +768,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 	if global.ZADV.Blueprint.is_blueprint_setup() then
 
 		local area = {}
-		newarea, area, center = PrepareNewArea(surface, center, newarea)
+		newarea, area = PrepareNewArea(surface, center, newarea)
 		
 		--[[ place blueprint on surface ]]--
 		local ghosts = global.ZADV.Blueprint.build_blueprint{
@@ -821,12 +821,12 @@ local function AplyBlueprintAuto(surface, center, newarea)
 				for _,e in pairs(entities) do if e and e.valid then 
 					
 					-- alpy optional settings
-					AdjustEntities(ent, newarea)
+					AdjustEntities(e, newarea)
 					
 					-- Script for each entity in new area
 					if type(newarea.ScriptForEach) == 'function' then
 					
-						local done, err = pcall(newarea.ScriptForEach, game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstore, areadata)
+						local done, err = pcall(newarea.ScriptForEach, game, surface, newarea.current_force, area, center, e, newarea.names or {}, locstore, areadata)
 						if not done and err then
 							errlog(newarea.name ..'ScriptForEach', "\n[%s].ScriptForEach error::\n\t%s\n", newarea.name, err:gsub('function ',''))
 						end
@@ -843,7 +843,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
 							end))()
-							done, err = pcall(_testfunc, game, surface, newarea.current_force, area, _center, e, newarea.names or {}, locstore, areadata)
+							done, err = pcall(_testfunc, game, surface, newarea.current_force, area, center, e, newarea.names or {}, locstore, areadata)
 							if not done and not global.ZADV.errors[newarea.name ..'ScriptForEach [[DEBUG]]'] then
 								debug("\n[[DEBUG]]\n[%s].ScriptForEach error::\n\t%s\n", newarea.name, err:gsub('function ',''))
 							end
@@ -861,7 +861,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 		-- Script for all entities in new area
 		if type(newarea.ScriptForAll) == 'function' then
 		
-			local done, err = pcall(newarea.ScriptForAll, game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata, locstore)
+			local done, err = pcall(newarea.ScriptForAll, game, surface, newarea.current_force, area, center, newarea.names or {}, entities or {}, areadata, locstore)
 			if not done and err then
 				errlog(newarea.name ..'_ScriptForAll', "\n[%s].ScriptForAll error::\n\t%s\n", newarea.name, err:gsub('function ',''))
 			end
@@ -878,7 +878,7 @@ local function AplyBlueprintAuto(surface, center, newarea)
 ----^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^--------
 -------------------------------------------------------------------------------------------------------------------------------------------
 				end))()
-				done, err = pcall(_testfunc, game, surface, newarea.current_force, area, _center, newarea.names or {}, entities or {}, areadata, locstore)
+				done, err = pcall(_testfunc, game, surface, newarea.current_force, area, center, newarea.names or {}, entities or {}, areadata, locstore)
 				if not done and not global.ZADV.errors[newarea.name ..'_ScriptForAll [[DEBUG]]'] then
 					debug("\n[[DEBUG]]\n[%s].ScriptForAll error::\n\t%s\n", newarea.name, err:gsub('function ',''))
 				end
