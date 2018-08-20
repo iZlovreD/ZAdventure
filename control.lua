@@ -1036,7 +1036,7 @@ local function GenerateArea( event )
 		local area = newarea
 		local done, err, func = false, '', ''
 		
-		if true or area.ignore_water or area.ignore_all_collision then
+		if area.ignore_water or area.ignore_all_collision then
 			func = 'AplyBlueprintManualy'
 			done, err = pcall(AplyBlueprintManualy, event.surface, pos, area)
 		else
