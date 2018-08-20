@@ -463,7 +463,6 @@ ret.area['danger chest'] = {
 		end
 	end
 	
-	
 	,ScriptForAll = function(game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
 		areadata.area = area
@@ -970,13 +969,13 @@ ret.area['occupied base'] = {
 		
 		if entity.valid then
 			if entity.prototype.name == "wooden-chest" then
-				locstore.posa = locstore.posa or {}
-				table.insert(locstore.posa, entity.position)
+				areadata.posa = areadata.posa or {}
+				table.insert(areadata.posa, entity.position)
 				entity.destroy()
 				
 			elseif entity.prototype.name == "iron-chest" then
-				locstore.posb = locstore.posb or {}
-				table.insert(locstore.posb, entity.position)
+				areadata.posb = areadata.posb or {}
+				table.insert(areadata.posb, entity.position)
 				entity.destroy()
 				
 			elseif entity.prototype.name == "logistic-chest-storage" then
@@ -986,7 +985,7 @@ ret.area['occupied base'] = {
 				entity.fluidbox[1] = { name = "heavy-oil", amount = 25000 }
 				
 			elseif entity.prototype.name == "roboport" then
-				locstore.posc = entity.position
+				areadata.posc = entity.position
 				entity.destroy()
 				
 			end
@@ -996,46 +995,46 @@ ret.area['occupied base'] = {
 	
 	,ScriptForAll = function(game, surface, force, area, center, namelist, entitylist, areadata, locstore)
 		
-		for _,e in pairs(surface.find_entities_filtered{area=Area.expand(area,5), name={"wooden-chest","iron-chest","roboport"}}) do e.destroy() end
+		for _,e in pairs(surface.find_entities_filtered{area=Area.expand(area,5), name={"wooden-chest","iron-chest"}}) do e.destroy() end
 		
-		locstore.zombie = locstore.zombie or "zadv-medium-zombie"
-		locstore.spawner = locstore.spawner or "zadv-beast-spawner"
-		
-		for _,pos in pairs(locstore.posa) do
-			locstore.zombie = locstore.zombie == "zadv-big-zombie" and "zadv-medium-zombie" or "zadv-big-zombie"
-			ZADV_ForceCreateEntity(surface, locstore.zombie, pos, force)
-		end
-		for _,pos in pairs(locstore.posb) do
-			locstore.spawner = locstore.spawner == "zadv-zombie-spawner" and "zadv-beast-spawner" or "zadv-zombie-spawner"
-			ZADV_ForceCreateEntity(surface, locstore.spawner, pos, force)
-		end
-		
-		local ent = ZADV_ForceCreateEntity(surface, 'zadv-roboport', locstore.posc, force)
-		ent.get_inventory(defines.inventory.roboport_robot).insert({name="logistic-robot", count=50})
-		ent.get_inventory(defines.inventory.roboport_robot).insert({name="construction-robot", count=50})
-		ent.get_inventory(defines.inventory.roboport_material).insert({name="repair-pack", count=500})
-		areadata.robopos = ent.position
-		local ent = ZADV_ForceCreateEntity(surface, 'hidden-electric-energy-interface', locstore.posc, force)
-		ent.electric_buffer_size = 108283
-		ent.power_production = 108283
-		ent.power_usage = 100000
-		
-		
-		areadata.force = force
+		areadata.force = 'ZADV_force'
 		areadata.surface = surface
 		areadata.center = center
 		areadata.timestamp1 = game.tick + 600
 		areadata.timestamp2 = game.tick + 54000
 		
-		game.forces[force].friendly_fire = false
-		game.forces[force].cancel_charting(surface)
-		game.forces[force].set_cease_fire('enemy', false)
-		game.forces[force].set_cease_fire('player', false)
-		game.forces[force].evolution_factor = math.min(1, game.forces.enemy.evolution_factor + 0.4)
+		game.forces['ZADV_force'].friendly_fire = false
+		game.forces['ZADV_force'].cancel_charting(surface)
+		game.forces['ZADV_force'].set_cease_fire('enemy', false)
+		game.forces['ZADV_force'].set_cease_fire('player', false)
+		game.forces['ZADV_force'].evolution_factor = math.min(1, game.forces.enemy.evolution_factor + 0.4)
 		
-		game.forces[force].worker_robots_battery_modifier = 100
-		game.forces[force].worker_robots_speed_modifier = 50
-		game.forces[force].worker_robots_storage_bonus = 5
+		game.forces['ZADV_force'].worker_robots_battery_modifier = 100
+		game.forces['ZADV_force'].worker_robots_speed_modifier = 50
+		game.forces['ZADV_force'].worker_robots_storage_bonus = 5
+		
+		areadata.zombie = areadata.zombie or "zadv-medium-zombie"
+		areadata.spawner = areadata.spawner or "zadv-beast-spawner"
+		
+		for _,pos in pairs(areadata.posa) do
+			areadata.zombie = areadata.zombie == "zadv-big-zombie" and "zadv-medium-zombie" or "zadv-big-zombie"
+			ZADV_ForceCreateEntity(surface, areadata.zombie, pos, 'ZADV_force')
+		end
+		for _,pos in pairs(areadata.posb) do
+			areadata.spawner = areadata.spawner == "zadv-zombie-spawner" and "zadv-beast-spawner" or "zadv-zombie-spawner"
+			ZADV_ForceCreateEntity(surface, areadata.spawner, pos, 'ZADV_force')
+		end
+		local ent = surface.create_entity{name = 'zadv-roboport', position = areadata.posc, 'ZADV_force'}
+		ent.force = 'ZADV_force'
+		ent.get_inventory(defines.inventory.roboport_robot).insert({name="logistic-robot", count=50})
+		ent.get_inventory(defines.inventory.roboport_robot).insert({name="construction-robot", count=50})
+		ent.get_inventory(defines.inventory.roboport_material).insert({name="repair-pack", count=500})
+		areadata.robopos = ent.position
+		ent = surface.create_entity{name = 'hidden-electric-energy-interface', position = areadata.posc, 'ZADV_force'}
+		ent.force = 'ZADV_force'
+		ent.electric_buffer_size = 108283
+		ent.power_production = 108283
+		ent.power_usage = 100000
 		
 	end
 

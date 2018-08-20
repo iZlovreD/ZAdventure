@@ -5,7 +5,7 @@ require 'stdlib/table'
 require 'lib/bplib'
 
 --
--- local variables
+-- variables
 --
 
 local format = string.format
@@ -186,9 +186,11 @@ function ZADV_ForceCreateEntity(surface, name, pos, force, dir)
 	
 	for i=1,atempts do
 		for _,e in pairs(surface.find_entities_filtered{area=Position.expand_to_area(pos, 0.2)}) do e.destroy() end
-		local ent = surface.create_entity{name=name, position=pos, force=force, direction=dir}
+		local ent = surface.create_entity{name=name, position=pos, force=force, direction=dir or 0}
 		if ent and ent.valid then return ent end
 	end
+	
+	return false
 	
 end
 
@@ -511,8 +513,6 @@ local function SaveNewAreaData(surface, area, newarea, areadata)
 		if f.name ~= 'neutral' and f.name ~= 'enemy' then
 			f.chart(surface, area2d)
 		end end
-		
-		if global.ZADV.debug >= 1 then game.print("New area  ".. newarea.name) end
 		
 	end
 	
@@ -1081,77 +1081,80 @@ end
 --- Global handler
 local function Global_Handler( event )
 	
-	if not global.ZADV.GLOBALY_DISABLED and global.ZADV.Initialized then
+	if not global.ZADV.GLOBALY_DISABLED then
 		
 		ZADV_ReInit()
 		
-		if global.ZADV.debug_pulse then
-			global.ZADV.debug_pulse = false
-			log(string.format('\n\n[[ZADV Dump]]\nGlobal = %s\nData = %s',serpb(global),serpb(ZADVData)))
-			game.print("Data dump created")
-		end
-		
-		if global.ZADV.ForceUnlock and event.tick >= global.ZADV.NextForceUnlock then
-			global.ZADV.InProcess = false
-			global.ZADV.ForceUnlock = false
-			debug("ForceUnlock")
-		end
-		
-		if 
-		global.ZADV.Events[event.name]
-		then
-			for
-			dname,edata in pairs(global.ZADV.Events[event.name])
-			do
-				if
-				ZADVData[edata.mod] and
-				ZADVData[edata.mod][edata.area] and
-				ZADVData[edata.mod][edata.area].Events and
-				type(ZADVData[edata.mod][edata.area].Events[event.name]) == 'function' and
-				global.ZADV.ArData[dname]
-				then
-					for
-					indx,ardata in pairs(global.ZADV.ArData[dname])
-					do
-						if
-						not ardata.disabled and
-						( (event.name == 0 and event.tick % 10 == indx % 10) or
-						event.name ~= 0 )
-						then
-						
-							local done, err = pcall(ZADVData[edata.mod][edata.area].Events[event.name], event,  global.ZADV.ArData[dname][indx], game)
-							if not done and err then
-								errlog(dname ..'_'.. event.name, "\n%s.on_event[%s] error:\n\t%s\n", dname, event.name, err:gsub('function ',''))
-							end
+		if global.ZADV.Initialized then
+			
+			if global.ZADV.debug_pulse then
+				global.ZADV.debug_pulse = false
+				log(string.format('\n\n[[ZADV Dump]]\nGlobal = %s\nData = %s',serpb(global),serpb(ZADVData)))
+				game.print("Data dump created")
+			end
+			
+			if global.ZADV.ForceUnlock and event.tick >= global.ZADV.NextForceUnlock then
+				global.ZADV.InProcess = false
+				global.ZADV.ForceUnlock = false
+				debug("ForceUnlock")
+			end
+			
+			if 
+			global.ZADV.Events[event.name]
+			then
+				for
+				dname,edata in pairs(global.ZADV.Events[event.name])
+				do
+					if
+					ZADVData[edata.mod] and
+					ZADVData[edata.mod][edata.area] and
+					ZADVData[edata.mod][edata.area].Events and
+					type(ZADVData[edata.mod][edata.area].Events[event.name]) == 'function' and
+					global.ZADV.ArData[dname]
+					then
+						for
+						indx,ardata in pairs(global.ZADV.ArData[dname])
+						do
+							if
+							not ardata.disabled and
+							( (event.name == 0 and event.tick % 10 == indx % 10) or
+							event.name ~= 0 )
+							then
 							
-						elseif
-						ardata.disabled
-						then
-						
-							global.ZADV.ArData[dname][indx] = nil
-							
-							local cnt = 0
-							for i in pairs(global.ZADV.ArData[dname]) do cnt = cnt+1 end
-							
-							if cnt == 0 then
-								global.ZADV.ArData[dname] = nil
-								global.ZADV.Events[event.name][dname] = nil
+								local done, err = pcall(ZADVData[edata.mod][edata.area].Events[event.name], event,  global.ZADV.ArData[dname][indx], game)
+								if not done and err then
+									errlog(dname ..'_'.. event.name, "\n%s.on_event[%s] error:\n\t%s\n", dname, event.name, err:gsub('function ',''))
+								end
 								
-							end
+							elseif
+							ardata.disabled
+							then
 							
-		end end end end end
+								global.ZADV.ArData[dname][indx] = nil
+								
+								local cnt = 0
+								for i in pairs(global.ZADV.ArData[dname]) do cnt = cnt+1 end
+								
+								if cnt == 0 then
+									global.ZADV.ArData[dname] = nil
+									global.ZADV.Events[event.name][dname] = nil
+									
+								end
+								
+			end end end end end
 		
+		end
 	end
 end
 
 --- Reassign events areas events
 function ZADV_ReEvent()
-
-	global.ZADV.Events = global.ZADV.Events or {}
-
-	for event,_ in pairs(global.ZADV.Events) do
-		if not script.get_event_handler(event) then
-			script.on_event(event, Global_Handler)
+	
+	if global.ZADV.Events then
+		for event,_ in pairs(global.ZADV.Events) do
+			if not script.get_event_handler(event) then
+				script.on_event(event, Global_Handler)
+			end
 		end
 	end
 	
@@ -1164,7 +1167,7 @@ end
 --- detect scenarios
 local function detectScenarios()
 	
-	if not global.ZADV.GLOBALY_DISABLED and not global.ZADV.DetectionComplete then
+	if not global.ZADV.GLOBALY_DISABLED then
 	
 		if not global.ZADV.PVP_MODE and table.find(game.surfaces, function(v) if v.name:find('battle_surface_') then return true end end) then
 			
@@ -1202,15 +1205,13 @@ local function detectScenarios()
 			
 		end
 		
-		global.ZADV.DetectionComplete = true
-		
 	end
 end
 
 --- Global initialization
 local function GetRawData()
 
-	global.ZADV.raw = { d='', s='', n='', u='' }
+	global.ZADV.raw = { d='', s='', u='' }
 	local chunks = game.entity_prototypes["ZADV_DATA_C"].order
 	local schunks = game.entity_prototypes["ZADV_DATA_S"].order
 	local uchunks = game.entity_prototypes["ZADV_DATA_U"].order
@@ -1237,16 +1238,18 @@ end
 
 local function ParseRawData()
 	
-	-- apply parsed data
-	ZADVData = loadstring(global.ZADV.raw.d)() or {}
-	global.ZADV.Settings = loadstring(global.ZADV.raw.s)() or {}
-	local usedTypes = loadstring(global.ZADV.raw.u)() or {}
-	debug("Raw data parsed.")
-	
-	-- set globals
-	global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
-	for _,t in pairs(usedTypes) do
-		global.ZADV.UsedTypes[t] = true
+	if global.ZADV.raw then
+		-- apply parsed data
+		ZADVData = loadstring(global.ZADV.raw.d)() or {}
+		global.ZADV.Settings = loadstring(global.ZADV.raw.s)() or {}
+		local usedTypes = loadstring(global.ZADV.raw.u)() or {}
+		debug("Raw data parsed.")
+		
+		-- set globals
+		global.ZADV.UsedTypes = global.ZADV.UsedTypes or {}
+		for _,t in pairs(usedTypes) do
+			global.ZADV.UsedTypes[t] = true
+		end
 	end
 	
 end
@@ -1254,9 +1257,9 @@ end
 local function Init()
 
 	-- global variables
-
 	global.ZADV = global.ZADV or {}
-	global.ZADV.errors = {}
+	global.ZADV.Events = global.ZADV.Events or {}
+	global.ZADV.errors = global.ZADV.errors or {}
 	global.ZADV.InProcess = false
 	global.ZADV.ForceUnlock = false
 	global.ZADV.NextForceUnlock = 0 
@@ -1295,6 +1298,7 @@ local function Init()
 	}
 	
 	-- if unsupported challange
+	global.ZADV.PVP_MODE = false
 	if (global.required ~=nil and global.points ~=nil and global.accumulated ~=nil and global.story ~=nil)
 	or (global.afk_time ~=nil and global.points ~=nil and global.round_number ~=nil and global.start_round_tick ~=nil)
 	or (global.bounty_bonus ~=nil and global.money ~=nil and global.send_satellite_round ~=nil and global.wave_number ~=nil) then
@@ -1302,25 +1306,20 @@ local function Init()
 		global.ZADV.GLOBALY_DISABLED = true
 	end
 	
-	-- events
-	debug('Prepare events')
-	global.ZADV.Events = global.ZADV.Events or {}
+	detectScenarios()
 	
 	-- randomizer
-	global.ZADV.seed = floor(tonumber(tostring({}):sub(8,-4)))
-	global.ZADV.generator = game.create_random_generator(global.ZADV.seed)
+	global.ZADV.seed = global.ZADV.seed or floor(tonumber(tostring({}):sub(8,-4)))
+	global.ZADV.generator = global.ZADV.generator or game.create_random_generator(global.ZADV.seed)
 	
-	-- logic vars
-	global.ZADV.PVP_MODE = false
-	global.ZADV.Initialized = true
-
 	script.on_event(defines.events.on_tick, Global_Handler)
 	script.on_event(defines.events.on_chunk_generated, GenerateArea)
 	
 	if global.ZADV.debug == 0 then
 		log("[[ZADV]] Initialization complete.")
 	else debug("Initialization complete.") end
-	--log(string.format('\nGlobal = %s\nData = %s',serpb(global),serpb(ZADVData)))
+	
+	global.ZADV.Initialized = true
 	
 end
 
@@ -1328,21 +1327,30 @@ local function Load()
 	
 	ParseRawData()
 	ZADV_ReEvent()
-
+	
 	script.on_event(defines.events.on_tick, Global_Handler)
 	script.on_event(defines.events.on_chunk_generated, GenerateArea)
-
+	
 end
 
 function ZADV_ReInit()
 	
 	if global.ZADV.ControlString ~= game.entity_prototypes["ZADV_DATA_CS"].order then
 		
-		game.print("[Z] Adventure: New or updated data found. Start re-initialization...", global.ZADV.Color.green)
+		game.print("[Z] Adventure: New or updated data found. Start re-initialization...", { r = 0.093, g = 0.768, b = 0.172})
 		log("[[ZADV]] New or updated data found. Start re-initialization...")
 		
-		GetRawData()
-		ParseRawData()
+		Init()
+		
+		if global._chunk_data then global._chunk_data = nil end
+		if global._chunk_indexes then global._chunk_indexes = nil end
+		if global.ZADV.Data then global.ZADV.Data = nil end
+		if global.ZADV.NamePairList then global.ZADV.NamePairList = nil end
+		if global.ZADV.areadata then
+			global.ZADV.areadata = nil
+			global.ZADV.restrictedareas = {}
+			global.ZADV.copy_per_force = {}
+		end
 		
 	end
 	
