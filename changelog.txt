@@ -1,4 +1,40 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.16.0
+Date: 20/08/2018
+  News:
+    - Overhaul of multiplayer.
+    - Non-blueprintable entities support (see example expansion for details).
+    - Option to ignore all collision is implemented (see example expansion for details).
+  Changes:
+    - Remove 1st argument "rndroll" from ScriptForEach function in area prototype. Now you can use global ZADV_Rnd(min, max, seed) as an alternative.
+    - Globalize some variables in the area prototypes.
+    - Optimize construction routine for some areas.
+    - Maze prototype variants unified and simplified.
+    - Color table globalized. Use "global.ZADV.Color.***" for predefined colors (White, Black, Gray, Red, Green, Blue, Yellow, Pink, Cyan, Orange, Purple, Brown, Acid).
+    - Error history added.
+    - Console commands:
+       "/zadv_debug N" - Set debug level [0-2] (0 - normal, 1 - additiional info, 2 - full info and increase area generation chance);
+       "/zadv_dump" - Write into log file all current data of mod;
+       "/zadv_reveal" - Switch showing of new areas;
+       "/zadv_dinfo" - Switch player position info;
+       "/zadv_errors" - Write into log file all occured errors;
+    - Lower data size transferred into control stage.
+    - Occupied Base:
+       Fast enslaved soldier - pursue distance and speed increased.
+       Angry enslaved soldier - pursue time and distance increased.
+    - Autordrome: New sound for car impact.
+  Bugfixes:
+    - Random generator became more deterministic.
+    - Occupied Base: Fix color mask for Fast enslaved soldier corpse.
+    - Autordrome: Races results now properly updating and displaying in MP.
+
+---------------------------------------------------------------------------------------------------
+Version: 1.16.7
+Date: 13/08/2018
+  Bugfixes:
+    - Fix after update.
+
+---------------------------------------------------------------------------------------------------
 Version: 1.16.6
 Date: 13/08/2018
   News:

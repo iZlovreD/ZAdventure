@@ -98,8 +98,8 @@ function BPlib.CalculateAreaData(input)
 		area.right_bottom.x = area.right_bottom.x < 0 and area.right_bottom.x or math.max(1,area.right_bottom.x)
 		area.right_bottom.y = area.right_bottom.y < 0 and area.right_bottom.y or math.max(1,area.right_bottom.y)
 		
-		area.size.x = math.max(1, math.abs(area.left_top.x - area.right_bottom.x))
-		area.size.y = math.max(1, math.abs(area.right_bottom.y - area.left_top.y))
+		area.size.x = math.ceil(math.max(1, math.abs(area.left_top.x - area.right_bottom.x)))
+		area.size.y = math.ceil(math.max(1, math.abs(area.right_bottom.y - area.left_top.y)))
 		
 		area.dim.y = math.max(1, math.ceil(area.size.y / 32))
 		area.dim.x = math.max(1, math.ceil(area.size.x / 32))

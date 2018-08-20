@@ -255,8 +255,6 @@ do -- base
 	spawner.flags = {"placeable-off-grid", "breaths-air", "not-repairable", "not-flammable"}
 	spawner.max_health = 350
 	spawner.healing_per_tick = 0.04
-	spawner.movement_speed = 0.3
-	spawner.distance_per_frame = 0.2
 	spawner.run_animation = table.deepcopy(ZADV.backup['panimations'][1].running)
 	spawner.attack_parameters.animation = table.deepcopy(ZADV.backup['panimations'][1].mining_with_tool)
 	spawner.run_animation.layers[2].tint = { r = 0.72, g = 0.21, b = 0 }
@@ -338,6 +336,12 @@ do -- base
 	end
 	spawner.attack_parameters.cooldown = 25
 	data:extend({spawner})
+	
+	data.raw['unit']['zadv-medium-beast'].movement_speed = 0.3
+	data.raw['unit']['zadv-medium-beast'].distance_per_frame = 0.3
+	data.raw['unit']['zadv-medium-beast'].max_pursue_distance = 75
+	data.raw['unit']['zadv-behemoth-beast'].max_pursue_distance = 75
+	data.raw['unit']['zadv-behemoth-beast'].min_pursue_time = 900
 
 	spawner = table.deepcopy(spawner)
 	spawner.name = "zadv-medium-zombie"
@@ -662,12 +666,12 @@ do -- race
 
 
 	racedata = table.deepcopy(ZADV.backup['car'])
-	racedata.name = "zadv-race-car-yellow"
+	racedata.name = "zadv-race-car-green"
+	racedata.health = 1000
 	racedata.minable = nil
 	racedata.operable = nil
 	racedata.mined_sound = nil
 	racedata.guns = nil
-	racedata.health = 750
 	racedata.inventory_size = 0
 	racedata.stop_trigger[1].sound[1].volume = 1.2
 	racedata.animation.layers[1].apply_runtime_tint = false
@@ -679,27 +683,6 @@ do -- race
 	for _,v in pairs(racedata.animation.layers[2].hr_version.stripes) do
 		if v.filename:find('mask') then v = nil end
 	end
-	racedata.animation.layers[1].stripes[1].filename = "__ZAdventure__/graphics/entity/car/car-1-yellow.png"
-	racedata.animation.layers[1].stripes[2].filename = "__ZAdventure__/graphics/entity/car/car-2-yellow.png"
-	racedata.animation.layers[1].stripes[3].filename = "__ZAdventure__/graphics/entity/car/car-3-yellow.png"
-	racedata.animation.layers[1].hr_version.stripes[1].filename = "__ZAdventure__/graphics/entity/car/hr-car-1-yellow.png"
-	racedata.animation.layers[1].hr_version.stripes[2].filename = "__ZAdventure__/graphics/entity/car/hr-car-2-yellow.png"
-	racedata.animation.layers[1].hr_version.stripes[3].filename = "__ZAdventure__/graphics/entity/car/hr-car-3-yellow.png"
-	racedata.animation.layers[1].hr_version.stripes[4].filename = "__ZAdventure__/graphics/entity/car/hr-car-4-yellow.png"
-	racedata.animation.layers[1].hr_version.stripes[5].filename = "__ZAdventure__/graphics/entity/car/hr-car-5-yellow.png"
-	racedata.animation.layers[1].hr_version.stripes[6].filename = "__ZAdventure__/graphics/entity/car/hr-car-6-yellow.png"
-	racedata.vehicle_impact_sound.volume = 1
-	racedata.working_sound.sound.filename = "__ZAdventure__/sounds/eng2.ogg"
-	racedata.working_sound.sound.volume = 1.2
-	racedata.working_sound.activate_sound.filename = "__ZAdventure__/sounds/eng1.ogg"
-	racedata.working_sound.activate_sound.volume = 1.2
-	racedata.working_sound.deactivate_sound.volume = 1.2
-	data:extend({racedata})
-
-
-	racedata = table.deepcopy(racedata)
-	racedata.name = "zadv-race-car-green"
-	racedata.health = 1000
 	racedata.animation.layers[1].stripes[1].filename = "__ZAdventure__/graphics/entity/car/car-1-green.png"
 	racedata.animation.layers[1].stripes[2].filename = "__ZAdventure__/graphics/entity/car/car-2-green.png"
 	racedata.animation.layers[1].stripes[3].filename = "__ZAdventure__/graphics/entity/car/car-3-green.png"
@@ -709,6 +692,25 @@ do -- race
 	racedata.animation.layers[1].hr_version.stripes[4].filename = "__ZAdventure__/graphics/entity/car/hr-car-4-green.png"
 	racedata.animation.layers[1].hr_version.stripes[5].filename = "__ZAdventure__/graphics/entity/car/hr-car-5-green.png"
 	racedata.animation.layers[1].hr_version.stripes[6].filename = "__ZAdventure__/graphics/entity/car/hr-car-6-green.png"
+	racedata.working_sound.deactivate_sound.volume = 1.2
+	racedata.working_sound.activate_sound = { filename = "__ZAdventure__/sounds/eng1.ogg", volume = 1.2 }
+	racedata.working_sound.sound = { filename = "__ZAdventure__/sounds/eng2.ogg", volume = 1.2 }
+	racedata.vehicle_impact_sound = { filename = "__ZAdventure__/sounds/imp.ogg", volume = 1 }
+	data:extend({racedata})
+
+
+	racedata = table.deepcopy(racedata)
+	racedata.name = "zadv-race-car-yellow"
+	racedata.health = 750
+	racedata.animation.layers[1].stripes[1].filename = "__ZAdventure__/graphics/entity/car/car-1-yellow.png"
+	racedata.animation.layers[1].stripes[2].filename = "__ZAdventure__/graphics/entity/car/car-2-yellow.png"
+	racedata.animation.layers[1].stripes[3].filename = "__ZAdventure__/graphics/entity/car/car-3-yellow.png"
+	racedata.animation.layers[1].hr_version.stripes[1].filename = "__ZAdventure__/graphics/entity/car/hr-car-1-yellow.png"
+	racedata.animation.layers[1].hr_version.stripes[2].filename = "__ZAdventure__/graphics/entity/car/hr-car-2-yellow.png"
+	racedata.animation.layers[1].hr_version.stripes[3].filename = "__ZAdventure__/graphics/entity/car/hr-car-3-yellow.png"
+	racedata.animation.layers[1].hr_version.stripes[4].filename = "__ZAdventure__/graphics/entity/car/hr-car-4-yellow.png"
+	racedata.animation.layers[1].hr_version.stripes[5].filename = "__ZAdventure__/graphics/entity/car/hr-car-5-yellow.png"
+	racedata.animation.layers[1].hr_version.stripes[6].filename = "__ZAdventure__/graphics/entity/car/hr-car-6-yellow.png"
 	data:extend({racedata})
 
 

@@ -27,10 +27,16 @@ local replace_data = {}
 local counter = 0
 local replaced = 0
 local total = ' Areas in total: %s%s'
+local DataString = ""
+local skiparea = {}
 
-ZADV.ControlString = ""
 
-skiparea = {}
+function table.length(T)
+	local count = 0
+	for k,v in pairs(T) do if v then count = count + 1 end end
+	return count
+end
+
 for modname,list in pairs( ZADV.Data ) do
 for bpname,bpdata in pairs(list) do
 	
@@ -45,8 +51,9 @@ for bpname,bpdata in pairs(list) do
 			end
 		end end
 		
-		ZADV.Data[modname][bpname] = nil
 		skiparea[modname..bpname] = true
+		ZADV.Data[modname][bpname] = nil
+		if table.length(ZADV.Data[modname]) == 0 then ZADV.Data[modname] = nil end
 		replaced = replaced+1
 		total = ' Areas in total: %s (%s updated)'
 		
@@ -74,20 +81,16 @@ for bpname,bpdata in pairs(list) do
 if not skiparea[modname..bpname] then
 	
 	-- check for empty area
-	if bpdata.bp and type(bpdata.bp) == "string" and bpdata.bp:len() > 0
+	if bpdata.bp and ( type(bpdata.bp) == "table" and bpdata.bp[1]:len() > 0 or bpdata.bp:len() > 0 or #bpdata.entities > 0)
 	and ((settings.startup["zadv_experemental"].value and bpdata.experemental) or not bpdata.experemental)
 	and ((settings.startup["zadv_dangerous"].value and bpdata.dangerous) or not bpdata.dangerous) then
 	
-		-- save area name
-		ZADV.NamePairList = ZADV.NamePairList or {}
-		if not bpdata.update_for then table.insert(ZADV.NamePairList, {modname,bpname} ) end
-		
 		-- prepare control string
-		ZADV.ControlString = ZADV.ControlString .. modname .. bpname
+		DataString = DataString .. modname .. bpname
 		
 		-- parse blueprint string into readable format
-		local _data = BPlib.CalculateAreaData(bpdata.bp)
-		if bpname == "TEST" then debug(2,BPlib.ParseToJson(bpdata.bp)) end
+		local _data = BPlib.CalculateAreaData(type(bpdata.bp) == "table" and bpdata.bp[1] or bpdata.bp)
+		if bpname == "TEST" then debug(2,BPlib.ParseToJson(type(bpdata.bp) == "table" and bpdata.bp[1] or bpdata.bp)) end
 		
 		-- check area size
 		local maxsize = 2^8 
@@ -103,7 +106,7 @@ if not skiparea[modname..bpname] then
 			local function _checkvalue(value, _type, default)
 				local ret = ""
 				if type(value) == _type then ret = value else ret = default end
-				ZADV.ControlString = ZADV.ControlString .. tostring(ret)
+				DataString = DataString .. tostring(ret)
 				return ret
 			end
 			local function _checkforce(value, _type, default)
@@ -112,7 +115,18 @@ if not skiparea[modname..bpname] then
 				if ret ~= 'neutral' and ret ~= 'enemy' and ret ~= 'player' then
 					ret = "ZADV_" .. ret
 				end
-				ZADV.ControlString = ZADV.ControlString .. tostring(ret)
+				DataString = DataString .. tostring(ret)
+				return ret
+			end
+			local function _checkentities(ents)
+				if type(ents) ~= 'table' then return {} end
+				local ret = {}
+				for _,ent in pairs(ents) do
+					if type(ents) == 'table' then
+						ent.id = ent.id or #ret+1
+						ret[#ret+1] = ent
+					end
+				end
 				return ret
 			end
 			
@@ -150,11 +164,12 @@ if not skiparea[modname..bpname] then
 			ZADV.Data[modname][bpname].rotatable 			= _checkvalue(bpdata.rotatable, 'boolean', true)
 			
 			-- other
+			ZADV.Data[modname][bpname].entities 			= _checkentities(bpdata.entities)
 			ZADV.Data[modname][bpname].areadata 			= table.deepcopy(bpdata.areadata and bpdata.areadata or {})
 			ZADV.Data[modname][bpname].ScriptForEach 		= table.deepcopy((bpdata.ScriptForEach and type(bpdata.ScriptForEach) == 'function') and bpdata.ScriptForEach or function() end)
 			ZADV.Data[modname][bpname].ScriptForAll 		= table.deepcopy((bpdata.ScriptForAll and type(bpdata.ScriptForAll) == 'function') and bpdata.ScriptForAll or function() end)
 			ZADV.Data[modname][bpname].Events	 			= (bpdata.Events and type(bpdata.Events) == 'table') and table.deepcopy(bpdata.Events) or nil
-			ZADV.Data[modname][bpname].messages 			= table.deepcopy((bpdata.messages and type(bpdata.messages) == 'table') and bpdata.messages or { { msg = "", color = {r=0.31, g=0.70, b=1, a=0.8} } })
+			ZADV.Data[modname][bpname].messages 			= table.deepcopy((bpdata.messages and type(bpdata.messages) == 'table') and bpdata.messages or { { msg = "",  global.ZADV.Color.white } })
 			
 			ZADV.Data[modname][bpname].remoteness_min 		= ZADV.Settings['zadv_starting_radius'] + ZADV.Data[modname][bpname].remoteness_min
 			ZADV.Data[modname][bpname].remoteness_max 		= ZADV.Data[modname][bpname].remoteness_max == 0 and 0 or ZADV.Settings['zadv_starting_radius'] + ZADV.Data[modname][bpname].remoteness_max
@@ -162,11 +177,13 @@ if not skiparea[modname..bpname] then
 			
 			ZADV.Data[modname][bpname].current_force		= ''..ZADV.Data[modname][bpname].force
 			
-			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].areadata)
-			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].ScriptForEach)
-			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].ScriptForAll)
-			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].Events)
-			ZADV.ControlString = ZADV.ControlString .. serpent.dump(ZADV.Data[modname][bpname].messages)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].bp)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].entities)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].areadata)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].ScriptForEach)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].ScriptForAll)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].Events)
+			DataString = DataString .. serpent.dump(ZADV.Data[modname][bpname].messages)
 			
 			counter = counter+1
 			
@@ -179,32 +196,37 @@ if not skiparea[modname..bpname] then
 	
 end end end
 
--- last preparations
-local dsize = ZADV.ControlString:gsub("[_- ]",''):len()
-ZADV.ControlString = md5.sumhexa(ZADV.ControlString:gsub("[_- ]",''))
-for _,com in pairs(delete) do local _=loadstring(com); _() end
+-- add collision types
+ZADV.CollisionTypes = {
+	'assembling-machine',
+	'electric-furnace',
+	'loader',
+}
+DataString = DataString .. serpent.dump(ZADV.CollisionTypes)
 
+-- Calculate control hash
+local ControlString = md5.sumhexa(DataString:gsub("[_- ]",''))
 
 --
 -- Store Prepared Data to Control
 --
 local dump = serpent.dump(ZADV.Data)
-local chunks = math.floor(#dump / 199) + 1
+local chunks = math.floor(#dump / 199)
 local sdump = serpent.dump(ZADV.Settings)
-local schunks = math.floor(#sdump / 199) + 1
-local ndump = serpent.dump(ZADV.NamePairList)
-local nchunks = math.floor(#ndump / 199) + 1
+local schunks = math.floor(#sdump / 199)
+local udump = serpent.dump(ZADV.CollisionTypes)
+local uchunks = math.floor(#udump / 199)
 
 debug(0,'----------------------------------------')
 debug(0, total, counter, replaced>0 and replaced or "")
-debug(0,' Data size: %.3f Kb', dsize/1024)
-debug(0,' Data chunks: %s', chunks+schunks+nchunks)
-debug(0,' Hash: %s', ZADV.ControlString)
+debug(0,' Data size: %.3f Kb', DataString:gsub("[_- ]",''):len()/1024)
+debug(0,' Data chunks: %s', chunks+schunks+uchunks)
+debug(0,' Hash: %s', ControlString)
 debug(0,'----------------------------------------')
-debug(1,ZADV)
+--debug(1,ZADV)
 
-	-- remember number of chunks
-	data:extend({
+-- remember number of chunks
+data:extend({
 	{
 		type = "flying-text",
 		name = "ZADV_DATA_C",
@@ -214,25 +236,25 @@ debug(1,ZADV)
 	},
 	{
 		type = "flying-text",
-		name = "ZADV_SDATA_C",
+		name = "ZADV_DATA_S",
 		time_to_live = 0,
 		speed = 1,
 		order = "".. schunks+1
 	},
 	{
 		type = "flying-text",
-		name = "ZADV_NDATA_C",
+		name = "ZADV_DATA_U",
 		time_to_live = 0,
 		speed = 1,
-		order = "".. nchunks+1
+		order = "".. uchunks+1
 	},
-	-- remember ControlString
+	-- save control string
 	{
 		type = "flying-text",
 		name = "ZADV_DATA_CS",
 		time_to_live = 0,
 		speed = 1,
-		order = "".. ZADV.ControlString
+		order = "".. ControlString
 	},
 	-- remember debug level
 	{
@@ -241,11 +263,12 @@ debug(1,ZADV)
 		time_to_live = 0,
 		speed = 1,
 		order = "".. ZADV.debug
-	}})
+	}
+})
 
 -- write data chunks
 for i=0, chunks do
-	local name = "ZADV_DATA_"..i
+	local name = "ZADV_DATA_C_"..i
 	data:extend({
 	{
 		type = "flying-text",
@@ -256,7 +279,7 @@ for i=0, chunks do
 	}})
 end
 for i=0, schunks do
-	local name = "ZADV_SDATA_"..i
+	local name = "ZADV_DATA_S_"..i
 	data:extend({
 	{
 		type = "flying-text",
@@ -266,14 +289,16 @@ for i=0, schunks do
 		order = "".. sdump:sub(i*199, (i+1)*199-1)
 	}})
 end
-for i=0, nchunks do
-	local name = "ZADV_NDATA_"..i
+for i=0, uchunks do
+	local name = "ZADV_DATA_U_"..i
 	data:extend({
 	{
 		type = "flying-text",
 		name = name,
 		time_to_live = 0,
 		speed = 1,
-		order = "".. ndump:sub(i*199, (i+1)*199-1)
+		order = "".. udump:sub(i*199, (i+1)*199-1)
 	}})
 end
+
+

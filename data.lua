@@ -24,6 +24,24 @@ local function debug ( level, msg, ... )
 	end
 end
 
+global = global or {}
+global.ZADV = global.ZADV or {}
+global.ZADV.Color = {
+		orange	= { r = 0.869, g = 0.5  , b = 0.130 },
+		purple	= { r = 0.485, g = 0.111, b = 0.659 },
+		red		= { r = 0.815, g = 0.024, b = 0.0   },
+		green	= { r = 0.093, g = 0.768, b = 0.172 },
+		blue	= { r = 0.155, g = 0.540, b = 0.898 },
+		yellow	= { r = 0.835, g = 0.666, b = 0.077 },
+		pink	= { r = 0.929, g = 0.386, b = 0.514 },
+		white	= { r = 0.8  , g = 0.8  , b = 0.8	},
+		black	= { r = 0.1  , g = 0.1  , b = 0.1	},
+		gray	= { r = 0.4  , g = 0.4  , b = 0.4	},
+		brown	= { r = 0.300, g = 0.117, b = 0.0	},
+		cyan	= { r = 0.275, g = 0.755, b = 0.712 },
+		acid	= { r = 0.559, g = 0.761, b = 0.157 }
+	}
+	
 
 ZADV.Settings['zadv_global_frequency'] = settings.startup["zadv_global_frequency"].value
 ZADV.Settings['zadv_starting_radius'] = settings.startup["zadv_starting_radius"].value
@@ -33,7 +51,7 @@ ZADV.Settings['zadv_disable_in_pvp'] = settings.startup["zadv_disable_in_pvp"].v
 local areas = require 'areas' or {}
 debug(1, "Requesting [%s] areas", areas.ModName)
 ZADV.Data[areas.ModName] = ZADV.Data[areas.ModName] or {}
-for name,area in pairs(areas.area) do if area.bp:len() > 0 then
+for name,area in pairs(areas.area) do if type(area.bp) == "table" and area.bp[1]:len() > 0 or area.bp:len() > 0 then
 	ZADV.Data[areas.ModName][name] = area
 end end
 
