@@ -540,6 +540,11 @@ ret.area['danger chest'] = {
 				end
 			end
 			
+			if not ent or not ent.valid then
+				ad.destroyed = true
+				next = false
+			end
+			
 			if next and ad.lootarea and not ad.looted and ad.stored_items ~= ad.entity.get_inventory(defines.inventory.chest).get_item_count() then
 				ad.looted = true
 				next = false
@@ -721,8 +726,12 @@ ret.area['maze'] = {
 				end
 			end
 			
+			if not ent or not ent.valid then
+				ad.destroyed = true
+				next = false
+			end
 			
-			if ad.lootarea and not ad.looted and ad.stored_items ~= ad.entity.get_inventory(defines.inventory.chest).get_item_count() then
+			if next and ad.lootarea and not ad.looted and ad.stored_items ~= ad.entity.get_inventory(defines.inventory.chest).get_item_count() then
 				ad.looted = true
 				next = false
 			end 
