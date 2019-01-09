@@ -42,57 +42,6 @@ do -- belts
 	}
 	recipe.result = "fast-transport-belt"
 	data:extend({recipe})
-
-	recipe = table.deepcopy(ZADV.backup['recipe-transport-belt'])
-	recipe.name = "zadv-transport-belt-slow"
-	recipe.enabled = true
-	recipe.hidden = true
-	recipe.flags = {'hidden'}
-	recipe.energy_required = 8
-	recipe.hidden_from_flow_stats = true
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients = {
-		{"iron-plate", 1},
-		{"iron-gear-wheel", 1}
-	}
-	recipe.result = "transport-belt"
-	data:extend({recipe})
-
-	recipe = table.deepcopy(ZADV.backup['recipe-fast-transport-belt'])
-	recipe.name = "zadv-fast-transport-belt-slow"
-	recipe.enabled = true
-	recipe.hidden = true
-	recipe.flags = {'hidden'}
-	recipe.energy_required = 12
-	recipe.hidden_from_flow_stats = true
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients = {
-		{"iron-gear-wheel", 2},
-		{"transport-belt", 1}
-	}
-	recipe.result = "fast-transport-belt"
-	data:extend({recipe})
-	
-	data:extend({ZADV.backup['lubricant']})
-	data:extend({ZADV.backup['recipe-lubricant']})
-	recipe = table.deepcopy(ZADV.backup['recipe-express-transport-belt'])
-	recipe.name = "zadv-express-transport-belt-slow"
-	recipe.enabled = true
-	recipe.hidden = true
-	recipe.flags = {'hidden'}
-	recipe.energy_required = 19
-	recipe.hidden_from_flow_stats = true
-	recipe.normal = nil
-	recipe.expensive = nil
-	recipe.ingredients = {
-		{"iron-gear-wheel", 5},
-		{"fast-transport-belt", 1},
-		{type="fluid", name="lubricant", amount=20}
-	}
-	recipe.result = "express-transport-belt"
-	data:extend({recipe})
 end
 do -- maze
 	local slow_path = table.deepcopy(ZADV.backup['stone-path'])
